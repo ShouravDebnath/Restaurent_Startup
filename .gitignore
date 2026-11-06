@@ -1,0 +1,83 @@
+# Local environment and secret material. Commit templates only.
+.env
+.env.*
+!.env.example
+!.env.*.example
+.envrc
+.secrets/
+secrets/
+credentials/
+credentials*.json
+*service-account*.json
+*.secret
+*.secrets
+.npmrc
+.pypirc
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa
+id_ed25519
+
+# Python environments, installation metadata, caches, and build output.
+.venv/
+venv/
+env/
+ENV/
+__pycache__/
+*.py[cod]
+*.egg-info/
+*.egg
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.tox/
+.nox/
+.coverage
+.coverage.*
+htmlcov/
+build/
+dist/
+
+# JavaScript dependencies and generated frontend output.
+node_modules/
+.next/
+next-env.d.ts
+out/
+.turbo/
+*.tsbuildinfo
+coverage/
+
+# Local runtime data, backups, logs, and temporary verification output.
+*.sqlite
+*.sqlite3
+*.sqlite-*
+*.sqlite3-*
+*.db
+*.db-*
+*.dump
+*.backup
+/backups/
+/postgres_data/
+/data/
+.cache/
+*.log
+*.tmp
+
+# Keep raw footage and downloaded model assets local by default.
+# Add an explicitly reviewed exception only for an authorized fixture.
+*.mp4
+*.mov
+*.avi
+*.mkv
+*.webm
+*.onnx
+*.pt
+
+# Machine/editor files.
+.DS_Store
+Thumbs.db
+Desktop.ini
+.idea/
+.vscode/

@@ -1,6 +1,8 @@
 # Restaurant AI Monitoring
 
-Privacy-first restaurant table operations SaaS. Phases 0–3 provide the specification, foundation, multi-restaurant database, sign-in/authorization/configuration, and an interactive DEMO floor dashboard with persistent timers, tasks, staff actions, activity and SSE updates. Real camera access, inference, device synchronization, analytics and billing remain later milestones. Phase 4 has not started.
+**Phase 4 local demo:** grant explicit preview access in `http://localhost:3000/settings`, then run `.\.venv\Scripts\python.exe -m restaurant_edge.cli serve --config .secrets/phase4/sources.json` and open `http://127.0.0.1:8765`. See the [complete beginner walkthrough](docs/phase_explanations/PHASE_04.md#windows-11-run-and-demonstrate). Use synthetic or explicitly authorized sources only.
+
+Privacy-first restaurant table operations SaaS. Phases 0–3 provide the specification, foundation, multi-restaurant database, sign-in/authorization/configuration, and an interactive DEMO floor dashboard with persistent timers, tasks, staff actions, activity and SSE updates. Phase 4 adds Windows-local synthetic MP4 processing, private authorized preview and persistent visual table calibration. Webcam/RTSP adapters have simulated tests; physical camera compatibility remains unverified. Inference, device synchronization, analytics and billing remain later milestones.
 
 ## Documentation and current status
 
@@ -14,6 +16,8 @@ Privacy-first restaurant table operations SaaS. Phases 0–3 provide the specifi
 - [Phase 3 explanation](docs/phase_explanations/PHASE_03.md): dashboard behavior, current verification, Windows commands and limits.
 - [Phase 3 GitHub checkpoint review](docs/PHASE_03_CHECKPOINT.md): fresh tests, secret review, existing GitHub commit and proposed documentation checkpoint.
 - [Approved Phase 3 plan](docs/PHASE_03_IMPLEMENTATION_PLAN.md) and [required credential rotation procedure](docs/DATABASE_CREDENTIAL_ROTATION.md).
+- [Phase 4 explanation](docs/phase_explanations/PHASE_04.md): working local preview/calibration, Windows commands, 333 passing tests, nine browser groups and limitations; [approved plan](docs/PHASE_04_IMPLEMENTATION_PLAN.md).
+- [Phase 4 checkpoint review](docs/PHASE_04_CHECKPOINT.md): fresh verification, founder-confirmed Revision 7 reload, staged file manifest and separate commit/push approval gates.
 
 The 2026-11-07 Phase 2 check passed 152 Python tests with real PostgreSQL, Python lint/dependency checks, frontend lint/types/build, running-stack checks, and an actual Edge browser flow. Cross-restaurant and explicit location boundaries are enforced by FastAPI and PostgreSQL RLS. The existing database container/volume was retained, backed up, and upgraded with additive migrations. Ports remain restricted to this PC. Read the [Phase 2 results](docs/phase_explanations/PHASE_02.md#actual-verification-results) for exact scope; earlier Phase 1 reports are historical.
 
@@ -23,7 +27,7 @@ To open the configured Phase 3 workspace, visit `http://localhost:3000/dashboard
 
 - `apps/web`: Next.js landing/sign-in/settings, DEMO floor/staff dashboard, fixed HTTP/SSE proxy.
 - `services/api`: FastAPI authentication/resources, PostgreSQL models, migrations, administration, security tests.
-- `services/edge-agent`: Python edge-agent package placeholder.
+- `services/edge-agent`: native Windows local video readers, supervised capture, protected companion and visual calibration editor.
 - `packages/contracts`: versioned shared contract notes.
 - `docs`: specification, architecture, API, threat model, and implementation plan.
 - `references`: supplied blueprint and reference reel; do not treat the reel as accuracy evidence.
@@ -76,8 +80,8 @@ docker compose ps
 
 These are Phase 2 local checks and preserve Phase 1 behavior. Runtime/browser scripts require the explicit synthetic seed and add synthetic table records. The Edge check requires the existing Windows Edge installation. They do not prove camera compatibility, AI accuracy, or production readiness.
 
-The project `.venv` works without `PYTHONPATH` overrides. CI configures isolated PostgreSQL integration tests; hosted CI results were not checked by this review. Fresh Phase 3 checks passed all 262 Python tests, ten dashboard-browser groups, four API restart-recovery groups, lint, types and the production build. API/web images use the existing npm lockfile with no npm dependency upgrades. The master specification, reference assets, and edge-agent source were preserved.
+The project `.venv` works without `PYTHONPATH` overrides. CI configures isolated PostgreSQL integration tests; hosted CI results were not checked by this review. Fresh Phase 3 checks passed all 262 Python tests, ten dashboard-browser groups, four API restart-recovery groups, lint, types and the production build. API/web images use the existing npm lockfile with no npm dependency upgrades. The master specification and reference assets were preserved; Phase 4 extends the edge package with the approved local input/calibration implementation.
 
 Remaining findings: npm audit reports 8 affected entries (1 high, 7 moderate), `next lint` is deprecated, and Starlette/HTTPX emits a test warning. The legacy database administrator password is weak and was preserved as instructed; rotate it through a reviewed procedure before public/pilot use. The API uses a separate generated password. Managed MFA, email verification/account recovery, production TLS/secret storage/hardening, dependency remediation, external security review, and later camera/device features remain open. See the full [limitations](docs/phase_explanations/PHASE_02.md#remaining-limitations-and-technical-debt).
 
-The existing commit `3342c427d7cf4339041e31fd804ac629351ed731` (`V1`) contains Phase 3 and was confirmed as the tip of both local `main` and GitHub `origin/main` on 2026-11-07. Phase 1/2 checkpoints remain its ancestors. This review did not create or push that commit. The six-file documentation checkpoint described in the review awaits separate founder approvals to commit locally and then push; no application functionality is being changed. `.gitignore` protects private environments/credentials, dependencies, generated files, databases/backups, footage, and model assets. Ignore rules cannot detect secrets embedded in source or prevent forced additions; review each future commit.
+Phase 3 implementation is saved in `3342c42` (`V1`). After separate founder approvals, its verification checkpoint `899f74368b9487ae1c33e0d0c0e511e37b396f36` was pushed and confirmed on GitHub `main` on 2026-11-08, Asia/Dhaka. Phase 1/2 checkpoints remain its ancestors. Phase 4 was separately approved and is implemented locally, with 333 tests (all 262 earlier cases retained), nine real browser integration groups and additive migrations 0005/0006. All original 347 public records and ten users/password hashes, database volume, credentials and earlier migration files are preserved. Phase 4 checkpoint changes are staged pending founder approval; no new commit/push or Phase 5 is authorized. `.gitignore` protects private environments/credentials, dependencies, generated files, databases/backups, footage, and model assets. Ignore rules cannot detect secrets embedded in source or prevent forced additions; review each future commit.

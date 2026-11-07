@@ -457,11 +457,16 @@ def zone(location_id: UUID, zone_id: UUID, identity: Auth, db: Db):
 
 
 @router.post("/locations/{location_id}/table-zones", response_model=s.ZoneOut, status_code=201)
-def create_zone(location_id: UUID, body: s.ZoneIn, identity: Write, db: Db):
+def create_zone(location_id: UUID, body: s.ZoneCreate, identity: Write, db: Db):
     loc, _ = location_access(db, identity, location_id, INSTALLERS)
     resource(db, DiningTable, body.table_id, loc)
     resource(db, Camera, body.camera_id, loc)
-    record = TableZone(organization_id=loc.organization_id, location_id=loc.id, **body.model_dump())
+    from restaurant_api.calibration import zone_request
+    previous = zone_request(db, identity, loc, body)
+    if previous:
+        return previous
+    record = TableZone(organization_id=loc.organization_id, location_id=loc.id,
+                       **body.model_dump(mode="json", exclude={"request_key"}))
     db.add(record)
     db.flush()
     audit(db, identity, loc.organization_id, "zone.created", loc.id, zone_id=str(record.id))
@@ -471,12 +476,16 @@ def create_zone(location_id: UUID, body: s.ZoneIn, identity: Write, db: Db):
 @router.put("/locations/{location_id}/table-zones/{zone_id}", response_model=s.ZoneOut)
 def update_zone(location_id: UUID, zone_id: UUID, body: s.ZoneUpdate, identity: Write, db: Db):
     loc, _ = location_access(db, identity, location_id, INSTALLERS)
+    from restaurant_api.calibration import zone_request
+    previous = zone_request(db, identity, loc, body, zone_id)
+    if previous:
+        return previous
     record = resource(db, TableZone, zone_id, loc, lock=True)
     if record.revision != body.expected_revision:
         raise HTTPException(409, "Zone changed; reload before saving.")
     resource(db, DiningTable, body.table_id, loc)
     resource(db, Camera, body.camera_id, loc)
-    for key, value in body.model_dump(exclude={"expected_revision"}).items():
+    for key, value in body.model_dump(mode="json", exclude={"expected_revision", "request_key"}).items():
         setattr(record, key, value)
     record.revision += 1
     audit(

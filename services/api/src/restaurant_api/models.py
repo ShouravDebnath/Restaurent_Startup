@@ -166,6 +166,7 @@ class DiningTable(Identified, Created, Scoped, Base):
 class TableZone(Identified, Created, Scoped, Base):
     __tablename__ = "table_zones"
     __table_args__ = (
+        UniqueConstraint("id", "organization_id", "location_id"),
         ForeignKeyConstraint(
             ["table_id", "organization_id", "location_id"],
             ["dining_tables.id", "dining_tables.organization_id", "dining_tables.location_id"],
@@ -185,6 +186,49 @@ class TableZone(Identified, Created, Scoped, Base):
     revision: Mapped[int] = mapped_column(Integer, server_default="1")
     source_width: Mapped[int] = mapped_column(Integer)
     source_height: Mapped[int] = mapped_column(Integer)
+    view_metadata: Mapped[dict | None] = mapped_column(JSONB, server_default=text("NULL"))
+
+
+class ZoneRevision(Identified, Created, Scoped, Base):
+    __tablename__ = "table_zone_revisions"
+    __table_args__ = (
+        ForeignKeyConstraint(["zone_id", "organization_id", "location_id"],
+                             ["table_zones.id", "table_zones.organization_id", "table_zones.location_id"]),
+        ForeignKeyConstraint(["camera_id", "organization_id", "location_id"],
+                             ["cameras.id", "cameras.organization_id", "cameras.location_id"]),
+        ForeignKeyConstraint(["table_id", "organization_id", "location_id"],
+                             ["dining_tables.id", "dining_tables.organization_id", "dining_tables.location_id"]),
+        UniqueConstraint("zone_id", "revision"),
+        UniqueConstraint("actor_id", "location_id", "request_key"),
+        CheckConstraint("revision >= 1", name="history_revision"),
+    )
+    zone_id: Mapped[UUID] = mapped_column()
+    camera_id: Mapped[UUID] = mapped_column()
+    table_id: Mapped[UUID] = mapped_column()
+    revision: Mapped[int] = mapped_column(Integer)
+    actor_id: Mapped[UUID | None] = mapped_column(ForeignKey("identity.users.id"))
+    snapshot: Mapped[dict] = mapped_column(JSONB)
+    reason: Mapped[str] = mapped_column(String(32))
+    request_key: Mapped[UUID | None] = mapped_column()
+    fingerprint: Mapped[str | None] = mapped_column(String(64))
+
+
+class PreviewGrant(Identified, Created, Scoped, Base):
+    __tablename__ = "camera_preview_grants"
+    __table_args__ = (
+        ForeignKeyConstraint(["camera_id", "organization_id", "location_id"],
+                             ["cameras.id", "cameras.organization_id", "cameras.location_id"]),
+        CheckConstraint("duration_seconds BETWEEN 60 AND 3600", name="preview_duration"),
+        CheckConstraint("expires_at = created_at + duration_seconds * interval '1 second'",
+                        name="preview_expiration"),
+        Index("preview_viewer_camera", "viewer_id", "camera_id", "expires_at"),
+    )
+    camera_id: Mapped[UUID] = mapped_column()
+    viewer_id: Mapped[UUID] = mapped_column(ForeignKey("identity.users.id"))
+    granted_by: Mapped[UUID] = mapped_column(ForeignKey("identity.users.id"))
+    duration_seconds: Mapped[int] = mapped_column(Integer)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
 
 class AuditLog(Identified, Created, Base):

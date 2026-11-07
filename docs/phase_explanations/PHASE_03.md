@@ -1,7 +1,9 @@
 # Phase 03: interactive restaurant dashboard with simulation
 
+> **Phase 4 compatibility — 2026-11-08:** The final expanded suite passes 333 tests, retaining all 262 Phase 3 cases. The running existing floor view/SSE was checked through the browser for connection >12 seconds and offline/reconnect; original table states/records remain unchanged. Local input/calibration, grants and revision history now exist in [PHASE_04.md](PHASE_04.md), but the dashboard still uses controlled DEMO observations and never derives occupancy from footage. Earlier 10-group workflow/restart results remain their dated Phase 3 evidence, not new Phase 4 runs. Stop before Phase 5.
+
 **Date:** 2026-11-07, Asia/Dhaka.
-**Status:** Implemented and verified locally. Stop for founder review; Phase 4 has not started.
+**Status:** Implemented and verified locally. The subsequent approved Phase 4 extension is documented separately; completion-time records below remain historical.
 **Authority:** [Master section 17, Phase 3](../MASTER_SPEC.md#phase-3---first-working-dashboard-with-simulation) and the [approved implementation plan](../PHASE_03_IMPLEMENTATION_PLAN.md).
 
 **Current Git status — later review on 2026-11-07:** Existing commit `3342c427d7cf4339041e31fd804ac629351ed731` (`V1`) already saves Phase 3 and was confirmed on GitHub `origin/main`. The [fresh verification/checkpoint review](../PHASE_03_CHECKPOINT.md) proposes only documentation changes, with separate approval required for a new local commit and its push. Earlier completion-time Git/cleanup results below remain historical.

@@ -34,4 +34,12 @@ def test_every_resource_route_has_negative_security_coverage(suite):
         for method in operations
         if method in {"get", "post", "patch", "put", "delete"}
     }
+    # Both-direction/anonymous cases are in test_calibration.py.
+    covered |= {
+        ("POST", "/v1/locations/{id}/cameras/{id}/preview-grants"),
+        ("GET", "/v1/locations/{id}/cameras/{id}/preview-grants"),
+        ("POST", "/v1/locations/{id}/cameras/{id}/preview-grants/{id}/revoke"),
+        ("GET", "/v1/locations/{id}/cameras/{id}/preview-authorization"),
+        ("GET", "/v1/locations/{id}/table-zones/{id}/revisions"),
+    }
     assert actual == covered | public

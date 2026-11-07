@@ -88,6 +88,7 @@ def provision_runtime(engine, username: str, password: str) -> None:
                 "GRANT SELECT ON public.location_operations,public.table_events,"
                 "public.staff_tasks,public.action_receipts TO {}"
             ),
+            "GRANT SELECT ON public.table_zone_revisions,public.camera_preview_grants TO {}",
         ]
         for statement in statements:
             cursor.execute(sql.SQL(statement).format(sql.Identifier(username)))

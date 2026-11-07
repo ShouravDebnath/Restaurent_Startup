@@ -9,6 +9,7 @@ from pydantic import BaseModel
 from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
+from restaurant_api.calibration import router as calibration_router
 from restaurant_api.routes import router
 from restaurant_api.security import Db
 from restaurant_api.settings import get_settings
@@ -43,6 +44,7 @@ def create_app() -> FastAPI:
     app = FastAPI(title="Restaurant AI Monitoring API", version="0.2.0")
     app.include_router(router)
     app.include_router(workflow_router)
+    app.include_router(calibration_router)
 
     def error_response(request, status, message):
         codes = {

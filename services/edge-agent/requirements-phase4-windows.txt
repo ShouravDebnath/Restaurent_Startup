@@ -1,0 +1,8 @@
+# Reviewed/approved project-only additions. Existing NumPy/API packages are preserved.
+opencv-python-headless==4.13.0.92
+keyring==25.7.0
+pywin32-ctypes==0.2.3
+jaraco.classes==3.4.0
+jaraco.context==6.1.2
+jaraco.functools==4.6.0
+more-itertools==11.2.1

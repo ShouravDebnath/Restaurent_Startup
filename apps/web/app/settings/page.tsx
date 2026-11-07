@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { FormEvent, useCallback, useEffect, useState } from "react";
 import { CameraForm, MemberForm, TableForm, ZoneForm } from "./forms";
 import type { Audit, Camera, Me, Member, Role, Table, Zone } from "./types";
+import { PreviewPermissions } from "./preview-permissions";
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -185,7 +186,7 @@ export default function SettingsPage() {
         {installer && <details><summary>Add camera metadata</summary><CameraForm key={locationId} path={`/v1/locations/${locationId}/cameras`} save={save} disabled={disabled} /></details>}
       </section>
       <section className="config-card"><h2>Table zones</h2>
-        <p className="hint">Saved calibration data. Camera preview and the drawing tool arrive in a later phase.</p>
+        <p className="hint">Saved calibration data. Use the authenticated local tool for video preview and visual polygon editing.</p>
         {!zones.length && <p className="muted">No table zones saved.</p>}
         {zones.map((z) => installer ? <details key={z.id}><summary>{tables.find((t) => t.id === z.table_id)?.label || "Table"} · {cameras.find((c) => c.id === z.camera_id)?.label || "Camera"} · revision {z.revision}</summary>
           <ZoneForm key={`${z.id}-${z.revision}`} initial={z} path={`/v1/locations/${locationId}/table-zones/${z.id}`} save={save} disabled={disabled} tables={tables} cameras={cameras} />
@@ -194,6 +195,8 @@ export default function SettingsPage() {
           <ZoneForm key={locationId + tables.length + cameras.length} path={`/v1/locations/${locationId}/table-zones`} save={save} disabled={disabled} tables={tables} cameras={cameras} />
         </details>}
       </section>
+      {installer && <PreviewPermissions key={locationId} locationId={locationId} cameras={cameras}
+        userId={me.id} canGrant={manager} save={save} disabled={disabled} />}
     </>}
 
     {admin && <>

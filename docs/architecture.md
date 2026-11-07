@@ -1,9 +1,11 @@
 # Restaurant AI Monitoring Architecture
 
-**Status:** Phases 0–3 implemented for local development. Real edge/video/analytics work remains planned.
+**Phase 4 boundary:** [The phase explanation](phase_explanations/PHASE_04.md) records a Windows-native loopback companion, a supervised video-only decoder and a single latest-frame mailbox. A per-human API session revalidates role/location/explicit camera consent and idle/absolute deadlines. Only IDs, permissions, geometry and audits cross the API boundary; frames and CCTV credentials stay local. A narrow literal-private-IP RTSP/TCP gateway injects Windows-store credentials and rejects other destinations. Additive 0005/0006 provide immutable complete calibration revisions, audited preview grants and a passive session deadline helper. The existing dashboard/SSE never receives camera occupancy in this phase. Physical webcam/RTSP interoperability, independent codec audit and native exploit sandboxing are unverified.
+
+**Status:** Phases 0–4 implemented locally. Synthetic local video/calibration is verified; physical hardware, AI detection, device sync and analytics remain unverified/planned.
 **Source:** `docs/MASTER_SPEC.md`
 
-Current source includes local Argon2id authentication, revocable server sessions, strict scoped configuration APIs, explicit memberships/location grants, backend authorization plus RLS, atomic audits, and a DEMO dashboard with saved states/tasks/history and SSE. Camera processing, device credentials/synchronization, analytics and billing remain planned. See [PHASE_03.md](phase_explanations/PHASE_03.md) for current evidence and limits; Phase 2 records remain historical.
+Current source includes local Argon2id authentication, revocable server sessions, strict scoped configuration APIs, explicit memberships/location grants, backend authorization plus RLS, atomic audits, and a DEMO dashboard with saved states/tasks/history and SSE. Phase 4 adds local video readers and camera credential storage; device enrollment/synchronization, inference, analytics and billing remain planned. See [PHASE_03.md](phase_explanations/PHASE_03.md) for current evidence and limits; Phase 2 records remain historical.
 
 ## Implemented Phase 3 workflow
 

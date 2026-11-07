@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Local camera calibration · Restaurant AI</title><link rel="stylesheet" href="/static/style.css">
+<script src="/static/editor.js" defer></script></head><body>
+<header><a class="brand" href="/">Restaurant AI <span>Local setup</span></a><span>Video stays on this computer</span></header>
+<main><div class="intro"><p class="eyebrow">CAMERA & TABLE CALIBRATION</p><h1>Give every table its place.</h1>
+<p>Open an authorized source, pause a reference frame, and draw a table boundary. Occupancy analysis is not enabled.</p></div>
+<p id="message" role="status" aria-live="polite"></p>
+<section id="signin" class="card"><h2>Sign in for local setup</h2><p>Your restaurant account needs an assigned setup role and location. A manager must explicitly permit camera preview.</p>
+<form id="login"><label>Email<input name="email" type="email" autocomplete="username" required></label>
+<label>Password<input name="password" type="password" autocomplete="current-password" required maxlength="512"></label><button>Sign in</button></form></section>
+<div id="workspace" hidden>
+<section class="card controls"><label>Restaurant / location<select id="location"></select></label>
+<label>Camera<select id="camera"></select></label><label>Table<select id="table"></select></label>
+<button id="logout" class="secondary">Sign out</button></section>
+<div class="layout"><section class="card viewer"><div class="viewer-heading"><h2>Local preview</h2><strong id="source-label">Not started</strong></div>
+<p id="health">STOPPED — explicitly start an authorized source</p>
+<p id="permission-status">Preview permission is checked before any frame is shown.</p>
+<div class="canvas-wrap"><canvas id="canvas" width="960" height="540" tabindex="0" aria-label="Table polygon editor. Pause a frame, then click to add corners. Use coordinate controls or arrow keys for keyboard editing."></canvas></div>
+<p id="reference-status">No frame loaded</p>
+<div class="toolbar"><button id="start">Start local preview</button><button id="stop" class="secondary">Stop</button>
+<button id="pause" class="secondary" disabled>Pause reference</button><button id="resume" class="secondary" disabled>Resume preview</button></div>
+<div class="toolbar"><label>Sampling FPS<input id="fps" type="number" min="0.5" max="10" step="0.5" value="2"></label>
+<label class="check"><input id="loop" type="checkbox">Explicitly loop MP4 (replay)</label>
+<label>View rotation<select id="rotation"><option value="0">0°</option><option value="90">90°</option><option value="180">180°</option><option value="270">270°</option></select></label>
+<label class="check"><input id="mirror" type="checkbox">Mirror view</label></div>
+<p class="hint">Preview permission expires automatically. Passive viewing does not extend your sign-in. Source failures never change restaurant table occupancy.</p>
+</section><aside class="card editor"><h2>Table boundary</h2><p>Pause the picture, then click each corner in boundary order. Drag a corner to adjust it. Coordinates use the original image.</p>
+<p id="revision">No saved polygon selected</p><p id="validation">Draw 3–64 distinct corners.</p>
+<p id="diagnostic" class="hint">Image coverage and overlap checks appear after drawing. These are geometry checks, not AI accuracy.</p>
+<label>Selected corner<select id="vertex"><option value="">None</option></select></label>
+<div class="coordinate"><label>X (0–1)<input id="point-x" type="number" min="0" max="1" step="0.001" value="0.1"></label>
+<label>Y (0–1)<input id="point-y" type="number" min="0" max="1" step="0.001" value="0.1"></label></div>
+<div class="toolbar"><button id="add-point" class="secondary">Add corner</button><button id="move-point" class="secondary">Move selected</button></div>
+<div class="toolbar"><button id="undo" class="secondary">Undo</button><button id="remove" class="secondary">Remove corner</button><button id="clear" class="secondary">Redraw</button></div>
+<button id="save" disabled>Save calibration</button><button id="reload" class="secondary">Reload saved polygon</button>
+<p id="save-status">Unsaved changes stay in this browser's memory. No automatic synchronization queue.</p>
+<details><summary>Saved revision history</summary><button id="history" class="secondary">Load revision history</button><ol id="history-list"></ol></details>
+</aside></div>
+<section class="card"><h2>Preview permission & source setup</h2><p>In restaurant settings, a manager can grant an eligible user 15 minutes of preview access and revoke it. Camera credentials are configured through the local terminal and Windows credential store; this page never requests them.</p>
+<a href="http://localhost:3000/settings" target="_blank" rel="noopener noreferrer">Open restaurant settings on this PC</a>
+<p class="hint">Only camera IDs, polygons, permissions and audits go to the API. No frames or audio are uploaded. Real camera compatibility must be verified individually.</p></section>
+</div></main><footer>Restaurant AI Monitoring · Phase 4 local video & calibration · No AI person detection</footer>
+</body></html>

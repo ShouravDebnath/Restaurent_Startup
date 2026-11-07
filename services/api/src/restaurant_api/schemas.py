@@ -150,12 +150,19 @@ class CameraOut(CameraIn):
     created_at: datetime
 
 
+class CalibrationView(Strict):
+    format_version: Literal[1] = 1
+    rotation: Literal[0, 90, 180, 270] = 0
+    mirrored: bool = Field(default=False, strict=True)
+
+
 class ZoneIn(Strict):
     table_id: UUID
     camera_id: UUID
     polygon: list[Point] = Field(min_length=3, max_length=64)
     source_width: int = Field(ge=1, le=32768)
     source_height: int = Field(ge=1, le=32768)
+    view_metadata: CalibrationView | None = None
 
     @field_validator("polygon")
     @classmethod
@@ -191,7 +198,11 @@ class ZoneIn(Strict):
         return points
 
 
-class ZoneUpdate(ZoneIn):
+class ZoneCreate(ZoneIn):
+    request_key: UUID | None = None
+
+
+class ZoneUpdate(ZoneCreate):
     expected_revision: int = Field(ge=1)
 
 

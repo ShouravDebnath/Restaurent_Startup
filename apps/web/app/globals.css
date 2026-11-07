@@ -29,3 +29,44 @@ ul { border-left: 1px solid var(--line); list-style: none; margin: 0; padding: 0
 li { font: 700 0.95rem/1.4 Arial, sans-serif; padding: 0.7rem 0; }
 li::before { color: var(--leaf); content: "✓"; margin-right: 0.7rem; }
 @media (max-width: 680px) { .shell { padding: 16vw 7vw; } .panel { grid-template-columns: 1fr; padding: 1.5rem; } ul { border-left: 0; border-top: 1px solid var(--line); padding: 1rem 0 0; } }
+
+.brand { color: var(--leaf); font: 700 1rem Arial, sans-serif; text-decoration: none; }
+.primary-link { color: var(--leaf); display: inline-block; font: 700 1rem Arial, sans-serif; margin-top: 1.5rem; }
+.auth-shell { margin: 0 auto; max-width: 520px; padding: 4rem 1.5rem; }
+.auth-card { background: #fffdf7; border: 1px solid var(--line); border-radius: 14px; margin-top: 3rem; padding: 2rem; }
+.auth-card h1 { font-size: 3rem; line-height: 1.1; }
+.workspace { margin: 0 auto; max-width: 1180px; padding: 2rem 4vw 5rem; }
+.workspace h1 { font-size: clamp(2.5rem, 5vw, 4.5rem); line-height: 1.05; margin: 1.5rem 0; }
+.workspace h2 { font-size: 1.8rem; }
+.workspace-header, .switcher { align-items: center; display: flex; flex-wrap: wrap; gap: 1rem; justify-content: space-between; }
+.workspace-header { border-bottom: 1px solid var(--line); margin-bottom: 3rem; padding-bottom: 1.5rem; }
+.switcher { background: var(--sage); border-radius: 10px; justify-content: flex-start; margin: 2rem 0; padding: 1.25rem; }
+.config-card { background: #fffdf7; border: 1px solid var(--line); border-radius: 12px; margin: 1.25rem 0; padding: 1.5rem; }
+.stack { display: flex; flex-direction: column; gap: 1rem; }
+.inline-form { align-items: flex-end; display: flex; flex-wrap: wrap; gap: 1rem; margin: 1rem 0; }
+label { display: flex; flex-direction: column; font: 600 0.85rem/1.5 Arial, sans-serif; gap: 0.3rem; min-width: 0; }
+input, select, textarea { background: white; border: 1px solid #829a87; border-radius: 5px; color: var(--ink); font: 1rem/1.4 Arial, sans-serif; max-width: 100%; padding: 0.65rem; }
+input[type=number] { width: 7rem; }
+input[type=checkbox] { accent-color: var(--leaf); height: 1rem; width: 1rem; }
+button { background: var(--leaf); border: 1px solid var(--leaf); border-radius: 5px; color: white; cursor: pointer; font: 700 0.9rem/1.4 Arial, sans-serif; padding: 0.7rem 1rem; }
+button:hover { filter: brightness(0.9); }
+button:disabled { cursor: wait; opacity: 0.5; }
+.secondary { background: transparent; color: var(--leaf); }
+:focus-visible { outline: 3px solid #b67523; outline-offset: 3px; }
+.hint { color: var(--muted); font: 0.85rem/1.5 Arial, sans-serif; }
+.error, .notice { border-radius: 6px; font: 1rem/1.5 Arial, sans-serif; padding: 0.8rem 1rem; }
+.error { background: #fce8e3; color: #812d23; }
+.notice { background: var(--sage); color: #1c5031; }
+.badge { background: #eaece5; border-radius: 20px; display: inline-block; font: 700 0.75rem/1.4 Arial, sans-serif; padding: 0.35rem 0.7rem; }
+details { border-top: 1px solid var(--line); margin-top: 1rem; padding-top: 1rem; }
+summary { color: var(--leaf); cursor: pointer; font: 700 0.95rem/1.4 Arial, sans-serif; }
+.zone-form { margin: 1rem 0; }
+textarea { min-height: 5rem; width: 100%; }
+.member-form { border-bottom: 1px solid var(--line); display: grid; gap: 1rem; grid-template-columns: 2fr 1fr; padding: 1.5rem 0; }
+.member-form strong { font: 700 1rem Arial, sans-serif; }
+.member-form button { justify-self: start; }
+.check { align-items: center; display: flex; flex-direction: row; gap: 0.5rem; }
+fieldset { border: 1px solid var(--line); border-radius: 5px; min-width: 0; padding: 0.8rem; }
+legend { font: 600 0.85rem Arial, sans-serif; }
+.audit-list p { border-bottom: 1px solid var(--line); display: flex; flex-wrap: wrap; font: 0.85rem/1.5 Arial, sans-serif; gap: 1rem; justify-content: space-between; padding-bottom: 0.6rem; }
+@media (max-width: 680px) { .member-form { grid-template-columns: 1fr; } .inline-form { align-items: stretch; flex-direction: column; } .workspace-header { align-items: flex-start; } .switcher label, .switcher select { width: 100%; } }

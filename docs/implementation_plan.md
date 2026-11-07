@@ -1,9 +1,9 @@
 # Implementation Plan
 
-**Status:** Phases 0 and 1 foundations exist; the 2026-11-07 environment check verifies the local Phase 1 runtime. Phase 2 has not started.
+**Status:** Phases 0–2 implemented; Phase 2 locally verified on 2026-11-07. Stop for founder review before Phase 3.
 **Rule:** Complete and verify one phase before beginning the next.
 
-Use [CODEX_HANDOFF.md](CODEX_HANDOFF.md) for the project handoff and pending product decisions, and the [latest Phase 1 environment report](phase_explanations/PHASE_01.md#pre-phase-2-environment-and-repository-check-2026-11-07) for current runtime/repository evidence. Docker was unavailable during the earlier handoff; the later check restored and verified the existing stack. This roadmap describes intended milestones, not completed features.
+Use [CODEX_HANDOFF.md](CODEX_HANDOFF.md) for the startup handoff and historical inspection, [PHASE_02.md](phase_explanations/PHASE_02.md) for current implementation/evidence, and the earlier [Phase 1 environment report](phase_explanations/PHASE_01.md#pre-phase-2-environment-and-repository-check-2026-11-07) as a historical maintenance record. Only phases explicitly marked implemented below are completed; later milestones remain planned.
 
 The later-product labels “Phase 2” and “Phase 3” in master section 4.2 refer to expansion versions. The numbered development phases below follow master section 17; development Phase 2 is tenancy and authentication.
 
@@ -28,13 +28,17 @@ Implement organizations, locations, users, memberships, roles, cameras, tables, 
 
 **Exit:** Two seeded tenants are isolated by backend enforcement.
 
-The [complete Phase 2 handoff checklist](CODEX_HANDOFF.md#9-phase-2-requirements-and-acceptance-criteria) includes explicit location grants, role checks, safe camera metadata, typed schemas, audits, real migrations, positive/negative authorization cases, and phase documentation. Identity/session design, database isolation strategy, and the minimum-schema relationship to later device/event/task entities must be settled in the approved Phase 2 proposal. No Phase 2 implementation is authorized by this document.
+**Implemented/verified:** real additive migrations 0001/0002; ten seeded users across two synthetic organizations/four locations; Argon2id and revocable cookie sessions; CSRF/throttling; approved roles and explicit location grants; strict metadata/configuration APIs, immutable ownership/composite foreign keys, restricted runtime login plus PostgreSQL RLS, atomic audits, and connected configuration screens. The final Python run passed 152 tests, including both-direction API and direct-database isolation tests. See [actual results](phase_explanations/PHASE_02.md#actual-verification-results).
+
+The [complete Phase 2 checklist](CODEX_HANDOFF.md#9-phase-2-requirements-and-acceptance-criteria) is mapped to evidence in the phase explanation. The founder approved the [local-session/RLS architecture](PHASE_02_ARCHITECTURE_PROPOSAL.md), role matrix, safe test/backup/migration procedure, and deferral of device/event/task schema and camera-device association. This approval does not authorize Phase 3, public deployment, or a later dependency migration.
 
 ## Phase 3: simulated dashboard
 
 Build the DEMO floor view, table states, timers, tasks, staff actions, SSE or justified equivalent, offline indicators, accessibility labels, and mobile layout.
 
 **Exit:** Two demo tenants show separate end-to-end workflows without video.
+
+**Proposal only:** See [the detailed Phase 3 implementation plan](PHASE_03_IMPLEMENTATION_PLAN.md) for the exact master requirements, proposed data/actions/SSE architecture, technologies, security/dependency decisions, file areas, ordered steps, and acceptance tests. The [fresh pre-Phase 3 review](phase_explanations/PHASE_02.md#pre-phase-3-review-2026-11-07) passed all 152 existing tests again (13.05 seconds). A [local Phase 2 checkpoint](PHASE_02_CHECKPOINT.md) is prepared for explicit commit approval; Phase 3 implementation is not authorized by that commit approval and has not started.
 
 ## Phase 4: local video and calibration
 
@@ -90,23 +94,24 @@ Only after Phase 9 and approval: add billing behind a feature flag, onboarding, 
 ## Decisions requiring founder approval
 
 1. First customer segment and US pilot geography.
-2. Identity provider and admin MFA approach.
+2. Production identity lifecycle/admin MFA/account recovery; Phase 2 local sessions are chosen.
 3. Supported camera/NVR and edge hardware list.
 4. Detector/weight license and commercial obligations.
 5. Deployment and support partner.
 6. Video/diagnostic retention, notices, and deletion process.
-7. Database row-level security decision.
+7. External review and production hardening of the chosen backend authorization plus PostgreSQL RLS.
 8. Initial thresholds and accuracy gates after labeled data.
 
-## Current blockers
+## Current limitations and later gates
 
 - The Markdown blueprint and `references/SR.mp4` are present. The master specification is byte-identical to the Markdown blueprint. A separate PDF was not found and is not required to read the available specification.
 - MP4 header inspection confirmed duration and dimensions. Visual frames were not re-reviewed during the handoff; earlier visual findings remain attributed to `docs/reference_analysis.md`. The reel is not authorized pilot/evaluation evidence by itself.
-- The November 7 check started the existing Docker installation and verified localhost HTTP, database readiness, read-only SQL, API-to-database connectivity, and Alembic current-state inspection. The database still contains only an empty `alembic_version` table. No migration upgrade or tenant schema was created; a fresh clean-machine installation and rebuilt images were not tested.
-- The project `.venv` was repaired using founder-approved local package/dependency installation. All four starter tests and Python lint pass. Package versions are not fully locked, and the resolved Starlette test stack emits an HTTPX deprecation warning. Host Python 3.14/Node 26 differ from Docker/CI Python 3.12/Node 22.
+- Phase 2 migrations, restricted runtime database access, rebuilt API/web images, and the running frontend/database path are now verified locally. A clean-machine installation and public production deployment are not verified. The original volume and database container were preserved, with a private backup restored in an isolated test database.
+- The project `.venv` includes approved Argon2 dependencies. The final 152-test Python run and lint pass, including the four original starter tests. Package versions are not fully locked; the Starlette test stack emits an HTTPX deprecation warning. Host Python 3.14/Node 26 differ from Docker/CI Python 3.12/Node 22.
 - npm audit still reports 8 affected packages (1 high, 7 moderate); no npm upgrades or overrides were applied. Explicit frontend tracing configuration removes the duplicate-lockfile warning. Deprecated `next lint` remains for later reviewed migration.
-- Git and `.gitignore` now exist. No files are staged or committed, and no remote is configured; earlier history and hosted CI results remain unavailable. A reviewed first commit/backup is still pending.
-- Approved Compose changes restrict published ports to localhost and add database/API readiness checks. The original PostgreSQL volume was preserved. Later Git preparation removes embedded credentials from the versioned template/Compose/Alembic settings and preserves local values in ignored `.env` and `.secrets/` files. That file cleanup has not been applied to the existing containers. Unused `APP_ENV`/`DEMO_MODE` behavior, Alembic's separate URL setting, and production secret management remain future configuration work; this setup is not production-hardened.
-- Identity/session choice, explicit location permissions, database isolation, schema scaffolding, and safe test-database provisioning remain decisions for the Phase 2 proposal. Hardware, model licensing, consent, real metrics, and external services remain unverified for later phases.
+- Git checkpoint `6808a81` exists on local `main`; Phase 2 changes remain uncommitted for review. No remote was added/changed or pushed. Hosted CI is configured for isolated PostgreSQL but has not run remotely.
+- Compose now applies restricted runtime credentials and database-backed readiness; the API enforces `APP_ENV`, cookie/origin requirements, and `DEMO_MODE`. Administrative secrets stay outside API runtime. Private values/backups remain ignored, and `.dockerignore` protects build contexts. Production secret storage, non-root images, TLS, admin MFA/recovery, and external review remain open.
+- The preserved legacy database administrator password is weak. The approved plan forbids rotating it in this phase; obtain approval for a reviewed rotation before public/pilot use. Runtime/demo credentials are separately generated and private.
+- Identity/session, roles, explicit grants, RLS, safe test databases, and later-schema boundaries were approved and implemented. Hardware, model licensing, consent, video, real metrics, and external services remain unverified for later phases. No later-phase feature is implemented.
 
-See the [handoff](CODEX_HANDOFF.md) for exact commands, outcomes, risk details, and the approval gate. Phase 2 remains unstarted.
+See [PHASE_02.md](phase_explanations/PHASE_02.md) for current commands, outcomes, risk details, and acceptance mapping. Stop for founder review; Phase 3 requires separate approval.

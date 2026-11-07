@@ -1,9 +1,13 @@
 # Threat Model
 
-**Status:** Phase 0 threat-model baseline; controls below are implementation requirements.
+**Status:** Phase 0 threat-model baseline with Phase 2 authentication/tenancy controls implemented and tested locally; later controls remain requirements.
 **Scope:** MVP edge agent, cloud API, dashboard, database, and authorized restaurant video inputs.
 
-This document describes target protections and future verification, not a completed security assessment. Current source has public synthetic/health routes and foundation code; authentication, tenant/location enforcement, device security, and most operational controls are not implemented. No customer data or real cameras should be onboarded on this basis. See [CODEX_HANDOFF.md](CODEX_HANDOFF.md#7-dependency-findings-technical-debt-and-security-risks) for dated dependency findings, existing risks, and verification limits.
+This is not a completed external security assessment. Phase 2 implements local Argon2id/server sessions, exact-origin/CSRF controls, persistent login throttling, explicit role/location authorization, restricted PostgreSQL runtime access, RLS, immutable ownership/composite references, safe errors/metadata, and protected atomic audits. Real PostgreSQL tests verify both HTTP and direct database boundaries. See [PHASE_02.md](phase_explanations/PHASE_02.md) for actual results and limits. Public synthetic/health routes contain no customer database rows. Device/video security, production TLS/secret storage, MFA/recovery, external review, and most operational controls remain unverified or later work. No real customer/camera onboarding is approved on this basis.
+
+The current npm audit still reports 8 affected entries (1 high, 7 moderate). No dependency upgrade or forced fix was applied. RLS relies on server-established identity and deliberately privileged migration/helper owners; it is not a defense against every application or administrator compromise. Retention cleanup, trusted proxy IP/rate-limit policy, load/concurrency/abuse testing, and non-root production images remain hardening work.
+
+The existing database administrator password is weak and remains unchanged under the explicit preservation rule. The API uses a separate generated restricted credential. Administrator credential rotation requires a reviewed, separately authorized procedure before public/pilot use; do not publish the existing local database configuration.
 
 ## Assets
 

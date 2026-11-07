@@ -1,8 +1,17 @@
 from datetime import UTC, datetime
 from typing import Literal
+from uuid import uuid4
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
+from sqlalchemy import text
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
+
+from restaurant_api.routes import router
+from restaurant_api.security import Db
+from restaurant_api.settings import get_settings
 
 
 class HealthResponse(BaseModel):
@@ -30,19 +39,76 @@ class DemoTenantResponse(BaseModel):
 
 
 def create_app() -> FastAPI:
-    app = FastAPI(title="Restaurant AI Monitoring API", version="0.1.0")
+    app = FastAPI(title="Restaurant AI Monitoring API", version="0.2.0")
+    app.include_router(router)
+
+    def error_response(request, status, message):
+        codes = {
+            401: "unauthenticated",
+            403: "forbidden",
+            404: "not_found",
+            409: "conflict",
+            422: "validation_error",
+            429: "rate_limited",
+            503: "unavailable",
+        }
+        return JSONResponse(
+            status_code=status,
+            content={
+                "error": {
+                    "code": codes.get(status, "request_failed"),
+                    "message": message,
+                    "request_id": getattr(request.state, "request_id", str(uuid4())),
+                }
+            },
+            headers={"Cache-Control": "no-store"},
+        )
+
+    @app.middleware("http")
+    async def request_headers(request: Request, call_next):
+        request.state.request_id = str(uuid4())
+        response = await call_next(request)
+        response.headers["X-Request-ID"] = request.state.request_id
+        response.headers["Cache-Control"] = "no-store"
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        return response
+
+    @app.exception_handler(HTTPException)
+    async def http_error(request: Request, error: HTTPException):
+        return error_response(request, error.status_code, str(error.detail))
+
+    @app.exception_handler(RequestValidationError)
+    async def validation_error(request: Request, error: RequestValidationError):
+        # Pydantic's default response can echo submitted passwords or secret URLs.
+        return error_response(request, 422, "Request fields are invalid; check the API schema.")
+
+    @app.exception_handler(SQLAlchemyError)
+    async def database_error(request: Request, error: SQLAlchemyError):
+        if isinstance(error, IntegrityError):
+            return error_response(
+                request, 409, "Change conflicts with existing data or constraints."
+            )
+        return error_response(request, 503, "Database operation unavailable.")
+
+    @app.get("/ready", response_model=HealthResponse)
+    def ready(db: Db) -> HealthResponse:
+        db.execute(text("SELECT * FROM security.profile()"))
+        return health()
 
     @app.get("/health", response_model=HealthResponse)
     def health() -> HealthResponse:
         return HealthResponse(
             status="ok",
             service="restaurant-ai-api",
-            environment="development",
+            environment=get_settings().app_env,
             checked_at=datetime.now(UTC),
         )
 
     @app.get("/v1/demo/tenant", response_model=DemoTenantResponse)
     def demo_tenant() -> DemoTenantResponse:
+        if not get_settings().demo_mode:
+            raise HTTPException(404, "Resource not found.")
         now = datetime.now(UTC)
         return DemoTenantResponse(
             demo=True,
@@ -59,6 +125,28 @@ def create_app() -> FastAPI:
             ],
         )
 
+    original_openapi = app.openapi
+
+    def openapi_with_session_security():
+        schema = original_openapi()
+        schema.setdefault("components", {}).setdefault("securitySchemes", {})["SessionCookie"] = {
+            "type": "apiKey",
+            "in": "cookie",
+            "name": get_settings().cookie_name,
+            "description": "HttpOnly session cookie; writes also require Origin and X-CSRF-Token.",
+        }
+        for path, operations in schema["paths"].items():
+            for method, operation in operations.items():
+                if (
+                    path.startswith("/v1/")
+                    and path != "/v1/demo/tenant"
+                    and not (path == "/v1/auth/session" and method == "post")
+                    and method in {"get", "post", "patch", "put", "delete"}
+                ):
+                    operation["security"] = [{"SessionCookie": []}]
+        return schema
+
+    app.openapi = openapi_with_session_security
     return app
 
 

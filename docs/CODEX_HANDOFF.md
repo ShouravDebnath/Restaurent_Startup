@@ -2,12 +2,18 @@
 
 **Handoff date:** 2026-11-06, using the founder's Asia/Dhaka calendar.  
 **Scope:** Documentation and independent verification of the existing project.  
-**Development status:** Phases 0 and 1 have documentation and foundation code. Phase 2 has not started.  
+**Current development status:** Phases 0–2 implemented and locally verified; stop for founder review before Phase 3. The original November 6 inspection below is preserved as history.
 **Main product authority:** [MASTER_SPEC.md](MASTER_SPEC.md), which is byte-identical to the supplied [Master Blueprint](../references/Restaurant_AI_Codex_Master_Blueprint.md) at this inspection.
+
+> **Fresh pre-Phase 3 review — 2026-11-07:** All **152 tests passed again**, with one existing warning, in 13.05 seconds. Python lint/compatibility and frontend lint/type/build checks passed; authenticated proxy read/isolation/logout checks passed. Docker was initially stopped and the existing services were started without rebuilding or replacing them. Earlier interactive browser/backup-restore results remain historical. npm still reports 8 affected packages (1 high/7 moderate), and the weak legacy administrator password remains unresolved. See the [new evidence](phase_explanations/PHASE_02.md#pre-phase-3-review-2026-11-07), [safe local checkpoint manifest awaiting approval](PHASE_02_CHECKPOINT.md), and [detailed Phase 3 proposal](PHASE_03_IMPLEMENTATION_PLAN.md). No application behavior was changed; no Phase 3 implementation or commit/push was performed in this review.
+
+> **Current Phase 2 update — 2026-11-07:** The founder explicitly approved Phase 2 and both [architecture choices](PHASE_02_ARCHITECTURE_PROPOSAL.md) before implementation. Current source now has PostgreSQL tenancy/configuration models, additive migrations 0001/0002, local Argon2id/server sessions, roles and explicit location grants, backend authorization plus RLS, atomic audits, synthetic seeds, and connected sign-in/configuration screens. The final Python run passed 152 tests, with real PostgreSQL cross-tenant/direct-SQL checks; running-stack and Edge browser checks pass. The existing DB container and original volume are retained, with a private backup restored in an isolated test database. See [PHASE_02.md](phase_explanations/PHASE_02.md) for complete evidence, files, startup commands, limitations, and P2-01–P2-12 mapping. No live dashboard, video, inference, device sync, analytics, or billing was started.
+
+> **How to read the older material:** Sections describing the November 6 architecture, files, feature gaps, environment, and verification preserve that inspection snapshot. Their statements about missing authentication/models, empty migrations, unavailable Docker, and missing Git history are historical and superseded by the updates above. Current risks still include 8 npm findings, test/lint deprecations, production identity/security operations, and unimplemented later features. Do not use an old “not started” or “not verified” entry as the current Phase 2 status.
 
 > **Later environment update — 2026-11-07:** This handoff preserves the November 6 inspection snapshot. The subsequent [Phase 1 environment/repository check](phase_explanations/PHASE_01.md#pre-phase-2-environment-and-repository-check-2026-11-07) started Docker, verified the existing stack and read-only PostgreSQL access, repaired `.venv` with approved dependencies, initialized Git/ignore rules, restricted published ports to localhost, added readiness checks, and removed the duplicate-lockfile warning. CI/web image instructions now use `npm ci`. Earlier missing-environment findings below are historical, not current blockers. npm findings and other documented limitations remain; no Phase 2 work was started.
 
-> **Later Git preparation — 2026-11-07:** The founder held the proposed commit for configuration cleanup. The [checkpoint cleanup record](phase_explanations/PHASE_01.md#git-checkpoint-configuration-cleanup-2026-11-07) documents the sanitized environment template, required Compose variable references, credential-free Alembic URL, preserved ignored local settings/backups, and read-only validation. Application source and running containers were not changed. A fresh Docker build/start with this new configuration has not been tested; the Git commit still requires explicit founder approval.
+> **Git preparation and completed checkpoint — 2026-11-07:** The founder held the first proposal for configuration cleanup, then approved the revised 43-file local commit. The resulting checkpoint is `6808a81b7339f241701eb03552d952827872f168` on `main`, message `chore: phase 1 verified foundation checkpoint`. The [cleanup record](phase_explanations/PHASE_01.md#git-checkpoint-configuration-cleanup-2026-11-07) remains historical. Phase 2 later rebuilt the sanitized API/web images and applied restricted runtime credential wiring. Phase 2 changes are uncommitted; no remote was added/changed and nothing was pushed.
 
 This document records a handoff from the previous assistant. It does not authorize another development phase. No application code, dependency versions, or database contents were changed during the handoff. No existing files were deleted and no dependencies were installed.
 
@@ -40,7 +46,7 @@ For example, Table 4 would become `OCCUPIED` after stable evidence of seated gue
 
 These are product rules, not an implemented state machine. The current demo response contains examples of only four of these states.
 
-Later product versions may add queue waiting times where tracking is reliable, POS/reservation integration, push notifications, multi-camera handling, and predictions after enough labeled history. The specification's later-product labels “Phase 2” and “Phase 3” are separate from its **development milestones 0–10**. The next development milestone is authentication and tenancy, not queue monitoring.
+Later product versions may add queue waiting times where tracking is reliable, POS/reservation integration, push notifications, multi-camera handling, and predictions after enough labeled history. The specification's later-product labels “Phase 2” and “Phase 3” are separate from its **development milestones 0–10**. Development Phase 2 covers authentication/tenancy and is now implemented; the next milestone, if approved, is the simulated dashboard.
 
 The product excludes facial recognition, customer identity matching, audio monitoring, emotion analysis, covert employee scoring, unauthorized camera access, and automatic cleanliness claims. A seated-duration alert cannot prove someone has not been served without a trusted manual or POS event.
 
@@ -69,6 +75,8 @@ The workspace has no `.git` metadata and `git status` cannot identify a branch, 
 Visual frame inspection was not repeated. The original decoder-availability assessment was incomplete: the November 7 inventory found `imageio-ffmpeg` already installed in the project `.venv`. No later frame/audio review was performed during these environment checks. The earlier codec, frame-rate, and scene descriptions remain attributed to [reference_analysis.md](reference_analysis.md). The promotional reel supplies visual inspiration; it supplies no measured AI accuracy, camera compatibility, or production evidence. Future inference/evaluation still requires synthetic or explicitly authorized footage and recorded provenance.
 
 ## 3. Architecture: current system and intended system
+
+**Historical snapshot:** “current” in this section means the November 6 inspection. The Phase 2 update above supersedes those implementation gaps.
 
 ### Current execution flow
 
@@ -106,6 +114,8 @@ The cloud remains a modular monolith: one FastAPI backend and one Next.js fronte
 All stored events must use UTC. Display and analytics boundaries must use the restaurant location's IANA time zone, including daylight-saving changes. The current API produces UTC timestamps and a synthetic `America/New_York` label; it does not yet store events or implement local-time analytics.
 
 ## 4. Existing technologies and important files
+
+**Historical snapshot:** this file inventory describes the November 6 baseline. The current Phase 2 file inventory is in its explanation.
 
 Versions below describe this inspected workspace. They are not a guarantee that a fresh installation will resolve the same versions.
 
@@ -148,6 +158,8 @@ The Python manifests specify version ranges rather than a locked complete enviro
 | `docs/` and `references/` | Requirements, target design, historical explanations, blueprint, and promotional reference |
 
 ## 5. Completed work and remaining functionality
+
+**Historical snapshot:** statuses in this section describe the November 6 inspection, before the subsequently approved Phase 2 implementation.
 
 ### Phase 0: documentation foundation
 
@@ -236,6 +248,8 @@ The production-build result above came from the isolated copy, not a source-tree
 
 ## 7. Dependency findings, technical debt, and security risks
 
+**Current resolution note:** Phase 2 resolves the old missing authentication/model/migration/tenant-boundary entries, adds safe private runtime configuration and applied images, and verifies the existing volume/database path. Current remaining limits and the fresh 8-entry npm audit are in [PHASE_02.md](phase_explanations/PHASE_02.md#remaining-limitations-and-technical-debt). The table below is the preserved original risk assessment, not a claim those resolved gaps remain absent.
+
 ### npm dependency findings
 
 `npm audit --package-lock-only --ignore-scripts --json` reported **8 affected package entries: 1 high and 7 moderate**, with no critical, low, or informational entries. Several entries are consequences of the same dependency chain; this is not eight independent demonstrated exploits.
@@ -294,8 +308,8 @@ The authoritative sequence is section 17 of the master specification and [implem
 | Phase | Required outcome | Acceptance gate and current status |
 | --- | --- | --- |
 | 0 — Specification freeze | Requirements, architecture, API direction, threat model, implementation plan, visible open decisions | Documents exist; reviewed now. Historical completion and approval are recorded in phase notes, not independently proven through Git history. |
-| 1 — Repository foundation | Web/API/edge packages, Compose/PostgreSQL/Alembic setup, demo, tests, CI, startup instructions | Foundation implemented; starter checks pass now. Clean-start/live-stack gate was historically reported; presently blocked. |
-| 2 — Tenancy and authentication | Persistent entities, secure sessions, roles, organization/location authorization, audits, two synthetic tenants | Every negative tenant test is blocked by the backend. **Not started.** Detailed requirements below. |
+| 1 — Repository foundation | Web/API/edge packages, Compose/PostgreSQL/Alembic setup, demo, tests, CI, startup instructions | Foundation implemented and locally verified; historical environment blockers resolved. Starter tests preserved/passed in Phase 2. |
+| 2 — Tenancy and authentication | Persistent entities, secure sessions, roles, organization/location authorization, audits, two synthetic tenants | **Implemented/locally verified.** All tested negative cases blocked in the final 152-test run; connected runtime/browser checks pass. See PHASE_02.md. |
 | 3 — Simulated dashboard | DEMO floor map, six states, timers, tasks, staff actions, SSE, offline labels, accessible mobile layout | Two demo restaurants have different end-to-end workflows without video. **Planned.** |
 | 4 — Video input and calibration | MP4/webcam/authorized RTSP adapters, timestamps, sampling, reconnect/stale handling, secure local preview, persistent polygons | Authorized MP4 works, calibration survives restart, and disconnects appear as health failures. **Planned.** |
 | 5 — Detector and state engine | License-reviewed detector, person-to-zone mapping, thresholds, hysteresis, manual precedence, authorized local debug overlays | Deterministic arrival/departure/occlusion/staff-crossing/low-confidence/outage/override/resume tests pass; no invented accuracy. **Planned.** |
@@ -309,7 +323,7 @@ The blueprint's initial quality targets include at least 90% state accuracy on a
 
 ## 9. Phase 2 requirements and acceptance criteria
 
-This section prepares future work only. It does not select a vendor, create a schema, or authorize implementation.
+This section preserves the full Phase 2 requirements prepared by the handoff. The founder later approved the design and implementation; [PHASE_02.md](phase_explanations/PHASE_02.md#acceptance-mapping-and-summary) maps every acceptance item to actual evidence. Statements below about choices to settle describe the original planning gate, which is now resolved by the approved architecture record.
 
 ### Required behavior and data
 
@@ -366,16 +380,17 @@ No billing, live dashboard implementation, camera connection, inference model, e
 
 ## 10. Pending decisions and recommended next steps
 
-### Decisions needed for the Phase 2 proposal
+### Phase 2 decisions now resolved
 
-- Identity/session mechanism and vendor availability, test strategy without production accounts, and admin MFA approach.
-- Exact role matrix, organization membership behavior, explicit location-grant representation, and platform support boundaries.
-- Database row-level security versus a documented, strongly tested application authorization approach; exact model/reference scaffolding described above.
-- Controlled Python/Node versions and dependency remediation strategy. No upgrade or installation is authorized by this handoff.
-- Safe test-database provisioning and migration/seed procedure that preserves current volumes and data.
+- Local Argon2id passwords and revocable server sessions approved/implemented; no external identity provider. Managed MFA, recovery, and email verification remain unavailable and need later decisions before real onboarding.
+- Owner/admin/manager/staff/installer roles, enabled memberships, explicit grants, and no default platform/support override approved/implemented.
+- Backend authorization plus PostgreSQL RLS with a restricted runtime login approved/implemented. Devices/events/tasks and camera-device association are deliberately deferred to later migrations.
+- Project-only Argon2 dependencies approved/installed; no global installation or npm dependency upgrade. Dependency pinning/remediation and host/container version alignment remain maintenance decisions.
+- Separate synthetic PostgreSQL testing, private backup/isolated restore, additive migrations, and idempotent seeds approved/executed; original volume/data retained.
 
 ### Decisions required before later pilot or commercial work
 
+- Reviewed rotation of the preserved weak legacy database administrator password; the new API runtime credential is separate and generated. Do not rotate the old account without approval and a recovery plan.
 - Brand/domain, company jurisdiction, initial US segment and pilot geography.
 - Authorized video provenance, retention/deletion, customer notices/contracts, and appropriate external legal/security review.
 - Supported camera/NVRs, edge operating systems/CPU/GPU capacity, installation technician, and support responsibilities.
@@ -384,15 +399,16 @@ No billing, live dashboard implementation, camera connection, inference model, e
 - Measured alert thresholds, operating limits, unknown-state coverage, evaluation dataset, and pilot quality gates.
 - Payment-provider eligibility for the intended Bangladesh-based company, pricing validation, installation/support costs, and later billing approval.
 
-Recommended order after the founder reviews this handoff:
+Recommended next steps after Phase 2:
 
-1. Confirm a recoverable/versioned source baseline and safe ignore policy; no history recovery or Git changes were attempted here.
-2. Diagnose Docker availability and agree on a reproducible environment; preserve database volumes. Approve any required installations separately.
-3. Review the dependency findings and choose an explicitly scoped maintenance approach. Do not run a forced major upgrade.
-4. Prepare the Phase 2 proposal with its entity boundaries, identity/RLS/permission decisions, files, dependencies, risks, and acceptance tests. Resolve the schema-scope ambiguity before implementation.
-5. Begin Phase 2 only after explicit founder approval. Keep it separate from maintenance or later feature milestones.
+1. Review [PHASE_02.md](phase_explanations/PHASE_02.md), test both synthetic accounts locally, and keep private credentials/backups outside Git.
+2. Decide any next local Git checkpoint separately; Phase 2 was not committed or pushed automatically.
+3. Review npm findings and production identity/operational risks before pilot/public exposure; approve any dependency migration separately. Do not run a forced major upgrade.
+4. Approve Phase 3 explicitly before simulated floor/timer/task/SSE work. No later phase is authorized by completing this handoff or Phase 2.
 
 ## 11. Handoff documentation changes and completion
+
+**Historical snapshot:** this is the November 6 documentation-only completion record, preserved for traceability. Current Phase 2 completion and remaining risks are linked at the top.
 
 | Document | Handoff change |
 | --- | --- |

@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 const checks = [
   "Synthetic demo tenant enabled",
   "Camera inference not configured",
@@ -15,6 +17,7 @@ export default function Home() {
           confirmation.
         </p>
         <div className="status"><span aria-hidden="true" /> DEMO MODE</div>
+        <p><Link className="primary-link" href="/settings">Open restaurant settings →</Link></p>
       </section>
       <section className="panel" aria-labelledby="foundation-title">
         <div>

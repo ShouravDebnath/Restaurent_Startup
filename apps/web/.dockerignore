@@ -1,4 +1,9 @@
 node_modules
 .next
 npm-debug.log*
+out
+.env
+.env.*
+*.log
+*.tsbuildinfo
 .git

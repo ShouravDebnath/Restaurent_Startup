@@ -1,8 +1,8 @@
 # Phase 01: Repository Foundation
 
-> **Latest status — 2026-11-07:** The [pre-Phase 2 environment/repository check](#pre-phase-2-environment-and-repository-check-2026-11-07) appended below supersedes earlier environment limitations. Existing containers and read-only PostgreSQL checks now pass, `.venv` is repaired, and Git/local-only networking protections are in place. Earlier reports remain historical records. Phase 2 has not started.
+> **Latest status — 2026-11-07, after Phase 2:** The approved Phase 2 implementation retains the Phase 1 health/demo/landing-page/edge foundation, adds real database-backed sign-in/configuration, and passes all four starter tests within the final 152-test run. See [PHASE_02.md](PHASE_02.md) and the compatibility update appended below for current startup/readiness/database behavior. Earlier reports, including “not started” and “not verified” entries, remain dated historical records. Phase 3 has not started.
 
-> **Current evidence note — 2026-11-06:** Earlier sections, including the “Final verification update,” are preserved historical reports from the previous assistant. The independent documentation-handoff results appended at the end are the current inspection record. They do not confirm that Docker, PostgreSQL, or localhost services are running now. See [CODEX_HANDOFF.md](../CODEX_HANDOFF.md) for the complete handoff. Phase 2 has not started.
+> **Historical evidence note — 2026-11-06:** The earlier verification and documentation-handoff sections preserve what was checked at those times. Their unavailable-runtime and unstarted-Phase-2 findings were superseded by later approved work. Do not treat those old results as a fresh verification; current evidence is linked above.
 
 ## Phase overview and objectives
 
@@ -557,3 +557,23 @@ For a fresh checkout, copy `.env.example` to a new `.env` and supply local usern
 ### Summary
 
 The checkpoint can now include sanitized startup configuration instead of omitting it. Private local values and original files remain available outside Git. The source is ready for another staged-file review; a commit, container update, or subsequent phase must not be inferred from this cleanup.
+
+## Phase 2 compatibility update: 2026-11-07
+
+The founder subsequently approved the revised 43-file Git checkpoint, created as `6808a81b7339f241701eb03552d952827872f168` on local `main`. The founder then approved Phase 2 and both authentication/database architecture decisions. The earlier “awaiting approval” rows describe their original checkpoints, not the current state.
+
+### Changes affecting Phase 1
+
+The original `/health` and public synthetic `/v1/demo/tenant` behavior and four starter tests are preserved. `/ready` now additionally checks restricted PostgreSQL access/security functions; Compose API health uses that route. The web landing page remains and links to real sign-in/configuration screens. `DEMO_MODE=false` disables the public synthetic route; no database/customer rows are served there. The edge-agent source is unchanged and no footage was processed.
+
+The API now has models, migrations 0001/0002, local authentication, role/location checks, RLS, configuration APIs, and audits. Compose passes separate restricted runtime credentials instead of database administrator credentials. API/web images were rebuilt and recreated with the approved Phase 2 changes; the original DB container and named volume were preserved. A private pre-migration backup was inspected and restored in an isolated test database. The DB is now at revision `0002`; its old empty-table status is historical.
+
+`migrations/env.py` now discovers model metadata and accepts the management command's private administrative connection. The Mako template was corrected to emit generated operations. Custom migration DDL is verified online; the old Phase 1 offline-generation instructions do not verify/support the new revisions. Dependencies add the approved Argon2 package; the FastAPI minimum reflects response-before-commit safety support. Frontend/API build contexts exclude private settings/generated output.
+
+### Current Windows run/test flow and actual results
+
+Use the full [Phase 2 Windows instructions](PHASE_02.md#windows-11-run-instructions). Existing configured images start with `docker compose up -d --no-build --pull never --wait --wait-timeout 60`. A new checkout requires private runtime preparation, database startup, backup, migrations, role provisioning, and an explicit synthetic seed before application startup. Do not use an empty template or administrator API connection.
+
+The final project-Python command `python -m pytest services/api/tests services/edge-agent/tests --import-mode=importlib -q` passed **152 tests**, including the original four starter tests, with one existing Starlette/httpx warning. Python lint/dependency consistency, frontend lint/type/build checks, restricted database readiness, cross-restaurant API/direct-SQL checks, and running-stack/Edge browser checks passed. The CSS warning introduced during Phase 2 was corrected. CI now includes isolated PostgreSQL but no hosted run was triggered.
+
+The npm report still has 8 affected entries (1 high, 7 moderate); no npm upgrade or forced fix was applied. Deprecated `next lint`, the Python test warning, production secrets/TLS/MFA/recovery, external review, and later monitoring features remain limitations. No existing file was deleted, no original database data/volume was removed, and no Git commit/push or Phase 3 work was performed during Phase 2. See [PHASE_02.md](PHASE_02.md) for the complete file/component explanations and acceptance mapping.

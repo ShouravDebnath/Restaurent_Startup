@@ -1,9 +1,27 @@
 # Restaurant AI Monitoring Architecture
 
-**Status:** Target architecture defined in Phase 0; Phase 1 foundation only is implemented.
+**Status:** Phases 0–2 implemented for local development. The edge/video/live-workflow pipeline below remains the target for later phases.
 **Source:** `docs/MASTER_SPEC.md`
 
-The responsibilities and pipeline below describe the intended MVP. Current source contains a static web shell, two synthetic/health API routes, an edge health helper, and database/container scaffolding. It does not yet implement authentication, database-backed resources, camera processing, synchronization, or SSE. The web page does not call the API. See [CODEX_HANDOFF.md](CODEX_HANDOFF.md) for current evidence and blockers; Phase 2 has not started.
+Current source includes local Argon2id authentication, revocable server sessions, strict resource APIs, a real multi-restaurant PostgreSQL schema, explicit memberships/location grants, backend authorization plus PostgreSQL RLS, atomic audits, and connected Next.js configuration screens. Health and public synthetic demo behavior remain. Camera processing, device credentials/synchronization, live dashboard workflows, SSE, analytics, and billing are not implemented. See [PHASE_02.md](phase_explanations/PHASE_02.md) for actual verification and limitations.
+
+## Implemented Phase 2 request boundary
+
+```mermaid
+flowchart LR
+    B[Browser configuration screens] --> N[Same-origin Next.js API proxy]
+    N --> A[FastAPI: verify session and CSRF]
+    A --> P[Check membership, role and location grant]
+    P --> D[Restricted PostgreSQL connection]
+    D --> R[Row-level security and ownership constraints]
+    R --> T[Permitted records and atomic audit writes]
+```
+
+The proxy uses a fixed server-side upstream and forwards cookies/CSRF without trusting client identity headers. Session tokens stay in HttpOnly cookies, with only token digests in the private database schema. Transaction-local `app.user_id` comes from the verified session; row policies derive permissions from enabled database memberships/grants. Request IDs never establish permission. Strict API filters and composite foreign keys prevent cross-location associations, and ownership triggers prevent reparenting.
+
+Runtime uses a non-owner, non-superuser login without `BYPASSRLS` or migration powers. Administrative migration credentials stay outside the running API. Privileged helper functions have fixed search paths and restricted execution grants. Local HTTP cookies are development-only; non-development settings require Secure cookies and HTTPS allowed origins. Managed MFA/recovery and production hardening remain open.
+
+Revisions 0001/0002 create organizations, locations, users, sessions/throttle records, memberships/grants, camera/table/zone metadata, and audits. The founder approved deferring devices/events/tasks and the camera-device foreign key to later migrations. No raw video is read or uploaded by Phase 2.
 
 ## Scope
 
@@ -87,9 +105,9 @@ No facial recognition, audio, emotion detection, covert staff surveillance, serv
 
 ## Open decisions for human approval
 
-- Identity provider and session implementation.
+- Production identity lifecycle, administrator MFA/account recovery, and any later managed-provider migration. Local Argon2id/server sessions were approved and implemented in Phase 2.
 - First supported camera/NVR compatibility list.
 - Detector and weight licenses for commercial use.
 - Exact deployment hardware and supported operating system.
-- Database row-level security versus application authorization plus security tests.
+- Continued review/hardening of the chosen backend authorization plus PostgreSQL RLS approach; that architecture decision is resolved for Phase 2.
 - Diagnostic video retention and legal/customer notice language.

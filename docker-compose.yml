@@ -21,9 +21,12 @@ services:
       context: ./services/api
     environment:
       DATABASE_URL: ${DATABASE_URL:-postgresql+psycopg://db}
-      PGUSER: ${POSTGRES_USER:?Set POSTGRES_USER in the private .env file}
-      PGPASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in the private .env file}
+      PGUSER: ${APP_DB_USER:?Run the management prepare command first}
+      PGPASSWORD: ${APP_DB_PASSWORD:?Run the management prepare command first}
       PGDATABASE: ${POSTGRES_DB:-restaurant_ai}
+      APP_ENV: ${APP_ENV:-development}
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:3000,http://127.0.0.1:3000}
       DEMO_MODE: ${DEMO_MODE:-true}
     ports:
       - "127.0.0.1:${API_PORT:-8000}:8000"
@@ -31,7 +34,7 @@ services:
       db:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3).read()"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/ready', timeout=3).read()"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -41,7 +44,7 @@ services:
     build:
       context: ./apps/web
     environment:
-      NEXT_PUBLIC_API_URL: http://localhost:8000
+      API_INTERNAL_URL: http://api:8000
     ports:
       - "127.0.0.1:${WEB_PORT:-3000}:3000"
     depends_on:

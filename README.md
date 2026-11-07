@@ -1,6 +1,6 @@
 # Restaurant AI Monitoring
 
-Privacy-first restaurant table operations SaaS. Phase 1 provides the repository foundation, a static DEMO page, health endpoints, and a public synthetic demo response. Authentication, tenant isolation, real camera access, and AI inference are not implemented yet. The web page does not fetch API data, and the API does not access PostgreSQL.
+Privacy-first restaurant table operations SaaS. Phases 0–2 provide the specification, repository foundation, a real multi-restaurant PostgreSQL database, local sign-in, backend/database authorization, and connected configuration screens. Live camera access, inference, floor-map simulation, tasks, analytics, and billing remain later milestones. Phase 3 has not started.
 
 ## Documentation and current status
 
@@ -8,37 +8,45 @@ Privacy-first restaurant table operations SaaS. Phase 1 provides the repository 
 - [Master specification](docs/MASTER_SPEC.md): product authority and development milestones.
 - [Implementation plan](docs/implementation_plan.md): milestone sequence and current blockers.
 - [Phase explanations and index](docs/phase_explanations/README.md): beginner-friendly phase records.
+- [Phase 2 explanation](docs/phase_explanations/PHASE_02.md): setup, architecture, roles, APIs, actual verification, and remaining limitations.
+- [Approved Phase 2 design](docs/PHASE_02_ARCHITECTURE_PROPOSAL.md): authentication/isolation alternatives and the founder's approved choices.
+- [Fresh Phase 2 review](docs/phase_explanations/PHASE_02.md#pre-phase-3-review-2026-11-07) and [local checkpoint manifest](docs/PHASE_02_CHECKPOINT.md): 152 tests passed again; commit awaits approval.
+- [Detailed Phase 3 proposal](docs/PHASE_03_IMPLEMENTATION_PLAN.md): requirements, security choices, technology, implementation sequence and acceptance tests; no Phase 3 implementation yet.
 
-The 2026-11-07 pre-Phase 2 check restored the existing Docker stack, repaired the project `.venv` with founder-approved project dependencies, initialized Git, and added ignore rules. The four starter tests, Python lint, frontend lint/types/build, live HTTP checks, and read-only PostgreSQL checks passed. Published ports are restricted to this PC, and database/API readiness checks are configured. The existing database volume was retained. See the [latest Phase 1 environment report](docs/phase_explanations/PHASE_01.md#pre-phase-2-environment-and-repository-check-2026-11-07) for actual results, warnings, and approvals. Phase 2 has not started.
+The 2026-11-07 Phase 2 check passed 152 Python tests with real PostgreSQL, Python lint/dependency checks, frontend lint/types/build, running-stack checks, and an actual Edge browser flow. Cross-restaurant and explicit location boundaries are enforced by FastAPI and PostgreSQL RLS. The existing database container/volume was retained, backed up, and upgraded with additive migrations. Ports remain restricted to this PC. Read the [Phase 2 results](docs/phase_explanations/PHASE_02.md#actual-verification-results) for exact scope; earlier Phase 1 reports are historical.
 
 ## Repository layout
 
-- `apps/web`: Next.js dashboard shell.
-- `services/api`: FastAPI cloud API and demo tenant endpoint.
+- `apps/web`: Next.js landing page, sign-in, configuration screens, fixed API proxy.
+- `services/api`: FastAPI authentication/resources, PostgreSQL models, migrations, administration, security tests.
 - `services/edge-agent`: Python edge-agent package placeholder.
 - `packages/contracts`: versioned shared contract notes.
 - `docs`: specification, architecture, API, threat model, and implementation plan.
 - `references`: supplied blueprint and reference reel; do not treat the reel as accuracy evidence.
+- `scripts`: isolated test database, private backup, running-stack and installed Edge verification helpers.
 
 ## Local setup
 
-The proposed Git checkpoint includes a sanitized `.env.example`, `docker-compose.yml`, and `services/api/alembic.ini`. Real local values belong in the ignored `.env` file. Compose supplies database credentials using `PGUSER`, `PGPASSWORD`, and `PGDATABASE`, so the versioned database URLs contain no credentials. Original local configuration copies are preserved under ignored `.secrets/`. The generated `next-env.d.ts` is excluded; Next.js regenerates it.
+The current project is configured and running. Real local values belong in ignored `.env`; the template has no credentials. Administrative `POSTGRES_*` values stay separate from the API's restricted `APP_DB_*` runtime values. Compose supplies runtime `PGUSER`, `PGPASSWORD`, and `PGDATABASE` privately. Original configuration copies, demo credentials, and backups stay under ignored `.secrets/`. Generated files and dependencies remain excluded from Git and private values are excluded from Docker build contexts.
 
-1. Preserve an existing `.env`. For a fresh installation, copy `.env.example` to `.env` and fill in `POSTGRES_USER` and `POSTGRES_PASSWORD`. Keep the current values for an existing database volume; editing environment values alone does not rotate an existing database password. The template intentionally leaves these fields empty and Compose refuses to render/start without them.
-2. Start Docker Desktop. For the existing local images, use `docker compose up -d --no-build --pull never --wait --wait-timeout 60`. A fresh image build uses `docker compose up --build --wait` and installs image dependencies; obtain installation approval when required.
-3. Open `http://localhost:3000` for the web shell.
-4. Check `http://localhost:8000/health` for the API.
-5. Check `http://localhost:8000/v1/demo/tenant` for synthetic demo data.
+1. Preserve the existing `.env`. For a new checkout only, copy `.env.example` and privately supply administrator credentials. Keep current credentials for an existing database volume. Follow the [Phase 2 bootstrap sequence](docs/phase_explanations/PHASE_02.md#bootstrap-a-checkout-or-apply-reviewed-forward-migrations): prepare private runtime settings, start the database, back up, migrate, provision the restricted login, optionally seed synthetic data, then build/start applications. A fresh API must not start with administrator credentials or before migrations.
+2. For this already-configured project, start Docker Desktop and use `docker compose up -d --no-build --pull never --wait --wait-timeout 60`.
+3. Open `http://localhost:3000/sign-in`. Read the `a_owner` or `b_owner` account from `.secrets/phase2-demo-credentials.json` locally; never paste that file into chat or Git. `/settings` is the configuration workspace; `/` retains the original synthetic foundation page.
+4. `http://localhost:8000/health` checks the API; `/ready` also checks restricted database readiness. The synthetic `/v1/demo/tenant` remains public in demo mode and never reads customer rows.
+5. Open `http://localhost:8000/docs` for typed API documentation. Protected routes use the session cookie; changes also need the allowed origin and CSRF header.
 
-Node.js/npm and Docker are required for the full stack. Python tests can run independently from `services/api` and `services/edge-agent`.
+Docker runs the application stack. Existing Python project dependencies support tests/admin commands; Node.js/npm support host web checks. Python integration tests now require the separately authorized disposable PostgreSQL test server.
 
-These are development setup instructions. The earlier handoff was documentation-only; the later environment check started existing software, installed only approved Python project dependencies, and applied approved container configuration changes. The subsequent Git preparation only sanitizes files; it does not apply this new credential wiring to existing containers. Compose preserves the named PostgreSQL volume and publishes its ports on `127.0.0.1`. `API_PORT` and `WEB_PORT` configure the host ports. Use synthetic or explicitly authorized inputs only. Do not delete volumes, reset databases, or install software without permission. This remains a development setup with public synthetic routes and local environment-based credentials; production secret management and a fresh container build/start with the sanitized configuration are not verified by Git preparation.
+This is local development, not a public/pilot security approval. The sanitized configuration and restricted credential wiring have now been built and verified in running containers. Custom web ports require matching exact `ALLOWED_ORIGINS`. Preserve volumes and private settings; never reset data or install software without the required approval. Use synthetic or explicitly authorized inputs only. No footage was processed in Phase 2.
 
 ## Verification commands
 
 From PowerShell at the repository root, use the repaired project environment:
 
 ```powershell
+.\.venv\Scripts\python.exe scripts/start_phase2_test_db.py
+# The script waits for the isolated PostgreSQL instance to become ready.
+
 Push-Location services/api
 & ..\..\.venv\Scripts\python.exe -m pytest -q -p no:cacheprovider
 & ..\..\.venv\Scripts\python.exe -m ruff check --no-cache .
@@ -58,10 +66,14 @@ Pop-Location
 .\.venv\Scripts\python.exe -m pip check
 docker compose config --quiet
 docker compose ps
+.\.venv\Scripts\python.exe scripts/verify_phase2_runtime.py
+.\.venv\Scripts\python.exe scripts/verify_phase2_browser.py
 ```
 
-These commands are Phase 1 checks. They do not prove camera compatibility, AI accuracy, production security, or deployment readiness.
+These are Phase 2 local checks and preserve Phase 1 behavior. Runtime/browser scripts require the explicit synthetic seed and add synthetic table records. The Edge check requires the existing Windows Edge installation. They do not prove camera compatibility, AI accuracy, or production readiness.
 
-The November 6 handoff's Anaconda commands remain historical evidence. The current project `.venv` works without `PYTHONPATH` overrides because both local packages are installed in editable mode. CI and future web image builds use `npm ci` with the existing lockfile; this check did not install or upgrade npm packages or rebuild Docker images.
+The project `.venv` works without `PYTHONPATH` overrides. CI now configures isolated PostgreSQL integration tests; hosted CI was not run because nothing was pushed. API/web images were rebuilt with the approved changes, using the existing npm lockfile and no npm dependency upgrades. The master specification, reference assets, and edge-agent source were preserved.
 
-Remaining findings: npm audit reports 8 affected package entries (1 high, 7 moderate), `next lint` is deprecated, and the newly resolved Python test stack emits a Starlette/HTTPX deprecation warning. Git was initialized on local `main` without commits or a remote during the environment check; use `git status` and `git log` for the current checkpoint state. `.gitignore` protects environment files, credential files, dependencies, caches, databases, footage, and model artifacts while allowing secret-free templates and lockfiles for review. The private `.env` and configuration backups must remain outside Git. Environment-based database passwords are a local development mechanism, not a production secret-management solution. Ignore rules do not detect secrets embedded in source or prevent forced additions; review each future commit.
+Remaining findings: npm audit reports 8 affected entries (1 high, 7 moderate), `next lint` is deprecated, and Starlette/HTTPX emits a test warning. The legacy database administrator password is weak and was preserved as instructed; rotate it through a reviewed procedure before public/pilot use. The API uses a separate generated password. Managed MFA, email verification/account recovery, production TLS/secret storage/hardening, dependency remediation, external security review, and later camera/device features remain open. See the full [limitations](docs/phase_explanations/PHASE_02.md#remaining-limitations-and-technical-debt).
+
+The existing local checkpoint is `6808a81b7339f241701eb03552d952827872f168` on `main`. Phase 2 changes are uncommitted for founder review; no remote was added/changed and nothing was pushed. `.gitignore` protects private environments/credentials, dependencies, generated files, databases/backups, footage, and model assets. Ignore rules cannot detect secrets embedded in source or prevent forced additions; review each future commit.

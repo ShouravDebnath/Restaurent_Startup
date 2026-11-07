@@ -1,0 +1,11 @@
+export type Role = "owner" | "org_admin" | "manager" | "staff" | "installer";
+export type Organization = { id: string; name: string; plan: string };
+export type Location = { id: string; organization_id: string; name: string; time_zone: string; address: string | null };
+export type Access = { organization: Organization; role: Role; locations: Location[] };
+export type Me = { id: string; email: string; display_name: string; access: Access[] };
+export type Table = { id: string; label: string; seats: number | null; current_state: string };
+export type Camera = { id: string; label: string; source_reference: string | null; status: string };
+export type Zone = { id: string; table_id: string; camera_id: string; polygon: number[][]; revision: number; source_width: number; source_height: number };
+export type Member = { id: string; user_id: string; email: string; display_name: string; role: Role; enabled: boolean; location_ids: string[] };
+export type Audit = { id: string; action: string; created_at: string; location_id: string | null };
+export type Save = (path: string, method: string, body?: object) => Promise<unknown>;

@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Restaurant AI Monitoring",
-  description: "Phase 1 foundation for privacy-first table operations.",
+  description: "Privacy-first restaurant configuration and table operations.",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

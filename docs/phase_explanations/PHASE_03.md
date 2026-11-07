@@ -4,6 +4,8 @@
 **Status:** Implemented and verified locally. Stop for founder review; Phase 4 has not started.
 **Authority:** [Master section 17, Phase 3](../MASTER_SPEC.md#phase-3---first-working-dashboard-with-simulation) and the [approved implementation plan](../PHASE_03_IMPLEMENTATION_PLAN.md).
 
+**Current Git status — later review on 2026-11-07:** Existing commit `3342c427d7cf4339041e31fd804ac629351ed731` (`V1`) already saves Phase 3 and was confirmed on GitHub `origin/main`. The [fresh verification/checkpoint review](../PHASE_03_CHECKPOINT.md) proposes only documentation changes, with separate approval required for a new local commit and its push. Earlier completion-time Git/cleanup results below remain historical.
+
 ## Overview and objectives
 
 Phase 2 supplied private restaurant workspaces and configuration. Phase 3 makes the dining-room workflow usable: a floor view, six table states, persistent timers, cleaning tasks, staff actions, safe activity history, and authorized live updates. It runs with synthetic events and needs no video.
@@ -173,6 +175,8 @@ The browser verifier deliberately changes synthetic demo tables and appends thei
 
 ## Actual verification results
 
+This table preserves the original implementation run. The later GitHub-preparation review below records fresh tests and supersedes the earlier uncommitted/no-remote status; earlier tests are not silently treated as current evidence.
+
 | Check | Actual result |
 | --- | --- |
 | Full Python regression/security run | **262 passed, 1 existing warning in 51.96 seconds**, project Python 3.14 and real isolated PostgreSQL; no skips |
@@ -199,6 +203,22 @@ Desktop/mobile screenshots and reports remain in ignored `.cache/` and `.secrets
 
 The final private preservation report confirms head 0004, zero model differences, 57 unchanged original business rows and ten unchanged original demo user rows/password hashes. The disposable test server is now stopped/removed. Run `scripts/start_phase2_test_db.py` before a future integration-test run; it preserves the old private manifest and creates a new isolated server when the old container is absent.
 
+## GitHub preparation and fresh verification — 2026-11-07
+
+The repository was clean at the start of this review: no modified, staged or eligible untracked files. The existing `V1` commit already contained the 39-file Phase 3 implementation. `git ls-remote --heads origin refs/heads/main` confirmed that GitHub and local `main` both pointed to `3342c427d7cf4339041e31fd804ac629351ed731`. This was a read-only check; no commit, push, history rewrite or remote change was performed.
+
+Freshly executed checks:
+
+- Full backend/edge suite: **262 passed, 1 existing warning in 52.90 seconds**, including all original 152 cases. A new marked, isolated PostgreSQL tmpfs server was used; the application volume was not used for the security tests.
+- Installed-Edge dashboard verifier: **10 groups passed** again, including A/B isolation, staff workflow, SSE, timers/clock skew, offline recovery, manual-state protection, mobile/keyboard and logout. It appends only explicit synthetic demo activity.
+- Actual API restart verifier: **4 groups passed** again. The API briefly restarted; committed events, a human session and one-effect retry survived. Database container and volume were unchanged.
+- Ruff, `pip check`, frontend lint, TypeScript, production build and quiet Compose validation passed again. Existing Starlette/HTTPX and next-lint deprecations remain. No packages were installed/upgraded, and no application source or dependency manifest was changed.
+- Read-only preservation check: all **57 original business rows**, migration head 0004, private `.env`, original database container and named volume are preserved. The earlier ten-user/password-hash backup comparison remains historical; it was not repeated against a restored backup in this review.
+- Working-tree review covered 92 tracked files at the initial clean state and 37 known private values. Historical review covered **135 unique blobs across all three reachable commits**. No known-value, credential-context, provider-token/private-key, literal-hash or sensitive-path matches were found. All 13 ignore probes pass. The legacy administrator password/common-text caveat still applies; this is not proof that every possible secret format can be detected.
+- Cleanup removed only the review's marked tmpfs test container, after confirming it had no volume/bind mounts. Application database/volume, project files and private reports/backups remain. The documentation checkpoint was prepared for approval on 2026-11-08, Asia/Dhaka, after the review crossed local midnight.
+
+The existing workflow configures hosted CI, but its GitHub run status was not checked here. Local verification and a matching remote commit do not prove hosted CI passed. The [checkpoint manifest](../PHASE_03_CHECKPOINT.md) lists the six documentation files proposed for a new review checkpoint; the implementation is already on GitHub. Existing npm findings and the required pre-pilot/public credential rotation remain unresolved. No Phase 4 work was started.
+
 ## Problems encountered and solutions
 
 - Narrowed database INSERT grants initially rejected new nullable ORM columns. Marked their NULL defaults as database defaults, retaining narrow grants, then reran all original tests successfully. Reparenting is now rejected by column permission before the earlier ownership trigger; its negative test still verifies rejection.
@@ -216,6 +236,6 @@ The final private preservation report confirms head 0004, zero model differences
 - Stream limits are per process; distributed limits, long-duration load, fully automated multi-browser coverage, a formal accessibility audit and clean-machine installation are not established. Recorded timing is an observed test result, not an SLA.
 - Role changes are enforced on every mutation; visible controls and non-table configuration metadata can need a snapshot refresh. The JSON proxy's body-size rejection follows buffering, so production ingress/body limits still need review. Large floors/task histories do not have complete UI pagination; truncation is explicit and paginated history APIs remain available.
 - The event/task models support this demo workflow. General task categories, full edge event ordering/reconciliation, production retention/deletion and analytical exports are not implemented early.
-- Phase 2 checkpoint `62ad22996f6e369c9116028ba0266ed3102b2e94` is retained on `main`. Phase 3 work remains uncommitted for founder review; no remote/push is part of this phase.
+- At initial implementation completion, Phase 2 checkpoint `62ad22996f6e369c9116028ba0266ed3102b2e94` was retained and Phase 3 was uncommitted. The later GitHub review above confirms Phase 3 in existing `3342c42` on local/GitHub `main`. Its new documentation checkpoint still requires explicit local-commit and then push approvals.
 
 Phase 3 now demonstrates separate restaurants, durable simulated table/task history, protected staff actions and live updates. All original functionality and records are preserved within the verified scope. Stop for founder review before any Phase 4 work.

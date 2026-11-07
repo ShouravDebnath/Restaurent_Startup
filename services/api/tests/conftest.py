@@ -5,7 +5,7 @@ import os
 import secrets
 from dataclasses import dataclass
 from pathlib import Path
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 import pytest
 from fastapi.testclient import TestClient
@@ -22,6 +22,11 @@ from restaurant_api.settings import get_settings
 
 ROOT = Path(__file__).resolve().parents[3]
 ORIGIN = "http://localhost:3000"
+
+
+class PrivateAccount(dict):
+    def __repr__(self):
+        return "<private synthetic test account>"
 
 
 @dataclass(repr=False)
@@ -44,6 +49,7 @@ class Suite:
     namespace: str
 
     def login(self, account):
+        account = PrivateAccount(account)
         client = TestClient(self.app, client=("test-" + uuid4().hex, 50000))
         response = client.post(
             "/v1/auth/session",
@@ -82,7 +88,7 @@ class Suite:
                         location_id=org["locations"][0],
                     )
                 )
-        return {"user_id": user_id, "member_id": member_id, "email": email, "password": password}
+        return PrivateAccount(user_id=user_id, member_id=member_id, email=email, password=password)
 
 
 @pytest.fixture(scope="session")
@@ -139,3 +145,29 @@ def clients(suite):
     yield result
     for value in result.values():
         value.client.close()
+
+
+@pytest.fixture(scope="session")
+def p3(suite, tmp_path_factory):
+    from restaurant_api.dashboard_seed import seed_dashboard
+
+    from .dashboard_support import DashboardSuite
+
+    seed = seed_demo(suite.admin, tmp_path_factory.mktemp("phase3-private") / "accounts.json",
+                     "dashboard-" + uuid4().hex[:8])
+    layout = seed_dashboard(suite.admin, seed)
+    clients = {key: suite.login(account) for key, account in seed["accounts"].items()}
+    yield DashboardSuite(suite, seed, layout, clients)
+    for client in clients.values():
+        client.client.close()
+
+
+@pytest.fixture
+def table_id(p3):
+    from restaurant_api.models import DiningTable
+
+    identifier = uuid4()
+    with Session(p3.suite.admin) as db, db.begin():
+        db.add(DiningTable(id=identifier, organization_id=UUID(p3.seed["organizations"]["a"]["id"]),
+                           location_id=UUID(p3.layout["locations"]["a"]["id"]), label="Test " + uuid4().hex[:12]))
+    return identifier

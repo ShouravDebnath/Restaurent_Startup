@@ -143,12 +143,10 @@ def main():
             )
             == "Synthetic Restaurant A"
         )
-        assert (
-            browser.evaluate(
-                "document.querySelectorAll('.switcher select')[1].options.length"
-            )
-            == 2
+        permitted_locations = browser.evaluate(
+            "Array.from(document.querySelectorAll('.switcher select')[1].options).map(o=>o.value)"
         )
+        assert set(seed["organizations"]["a"]["locations"]).issubset(permitted_locations)
         marker = "Browser check " + uuid4().hex[:8]
         browser.evaluate(
             "Array.from(document.querySelectorAll('summary')).find(e=>e.textContent==='Add a table').parentElement.open=true"

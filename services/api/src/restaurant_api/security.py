@@ -51,10 +51,16 @@ class Identity:
 
 def authenticated(request: Request, db: Db) -> Identity:
     token = request.cookies.get(get_settings().cookie_name, "")
+    return resolve_identity(db, token, touch=request.method not in {"GET", "HEAD", "OPTIONS"})
+
+
+def resolve_identity(db: Session, token: str, *, touch: bool = False) -> Identity:
+    """Read paths, including every SSE check, do not extend idle or absolute expiry."""
     if not 32 <= len(token) <= 128:
         raise HTTPException(401, "Authentication required.")
+    function = "resolve_session" if touch else "peek_session"
     user_id = db.scalar(
-        text("SELECT security.resolve_session(:digest, :idle)"),
+        text(f"SELECT security.{function}(:digest, :idle)"),
         {"digest": digest(token), "idle": get_settings().session_idle_seconds},
     )
     if user_id is None:

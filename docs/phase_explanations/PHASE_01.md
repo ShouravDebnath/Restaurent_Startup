@@ -1,5 +1,7 @@
 # Phase 01: Repository Foundation
 
+> **Phase 3 compatibility update:** The [simulated dashboard milestone](PHASE_03.md) preserves the foundation health/demo/settings paths and four original starter tests within its expanded suite. Existing database/container data and private credentials are preserved; API/web images are rebuilt. Use the Phase 3 explanation for current commands and verification. Earlier phase-status and test reports below remain historical.
+
 > **Latest status — 2026-11-07, after Phase 2:** The approved Phase 2 implementation retains the Phase 1 health/demo/landing-page/edge foundation, adds real database-backed sign-in/configuration, and passes all four starter tests within the final 152-test run. See [PHASE_02.md](PHASE_02.md) and the compatibility update appended below for current startup/readiness/database behavior. Earlier reports, including “not started” and “not verified” entries, remain dated historical records. Phase 3 has not started.
 
 > **Historical evidence note — 2026-11-06:** The earlier verification and documentation-handoff sections preserve what was checked at those times. Their unavailable-runtime and unstarted-Phase-2 findings were superseded by later approved work. Do not treat those old results as a fresh verification; current evidence is linked above.

@@ -2,6 +2,7 @@
 
 **Verification date:** 2026-11-07, Asia/Dhaka.
 **Status:** Implemented and verified for local development; founder review is the next gate. Phase 3 has not started.
+> **Later Phase 3 update:** The founder approved and implemented [the dashboard milestone](PHASE_03.md). Revisions 0003/0004 extend the schema; operational grants are narrower; GET/SSE checks no longer refresh idle expiry. All 152 original cases remain in the expanded suite, with the expected migration head and earlier permission-denial assertion updated. Phase 2 checkpoint `62ad229` is complete. Statements below describing an unstarted Phase 3/pending checkpoint are preserved historical evidence.
 **Approved design:** [Architecture decision record](../PHASE_02_ARCHITECTURE_PROPOSAL.md). The founder explicitly approved local Argon2id authentication, project-only dependencies, backend permissions plus PostgreSQL RLS, restricted database access, additive migrations, synthetic seeds, isolated tests, backup, and application image rebuilds.
 
 ## Overview and objectives

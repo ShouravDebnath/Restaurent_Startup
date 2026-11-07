@@ -1,4 +1,4 @@
-"""Phase 2 persistence. Device/event/task models belong to later milestones."""
+"""Tenant configuration and Phase 3 operational persistence; no video/device ingestion."""
 
 from datetime import datetime
 from typing import ClassVar
@@ -8,12 +8,15 @@ from sqlalchemy import (
     Boolean,
     CheckConstraint,
     DateTime,
+    Float,
     ForeignKey,
     ForeignKeyConstraint,
+    Index,
     Integer,
     String,
     UniqueConstraint,
     func,
+    text,
 )
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
@@ -147,6 +150,17 @@ class DiningTable(Identified, Created, Scoped, Base):
     state_since: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
+    operational_revision: Mapped[int] = mapped_column(Integer, server_default="0")
+    state_source: Mapped[str] = mapped_column(String(16), server_default="unverified")
+    occupancy_session_id: Mapped[UUID | None] = mapped_column(server_default=text("NULL"))
+    occupied_since: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), server_default=text("NULL")
+    )
+    source_status: Mapped[str] = mapped_column(String(24), server_default="NOT_CONFIGURED")
+    observation: Mapped[str] = mapped_column(String(16), server_default="UNKNOWN")
+    observed_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), server_default=text("NULL")
+    )
 
 
 class TableZone(Identified, Created, Scoped, Base):
@@ -185,3 +199,85 @@ class AuditLog(Identified, Created, Base):
     actor_id: Mapped[UUID] = mapped_column(ForeignKey("identity.users.id"))
     action: Mapped[str] = mapped_column(String(80))
     details: Mapped[dict] = mapped_column(JSONB, default=dict)
+
+
+class LocationOperations(Scoped, Base):
+    __tablename__ = "location_operations"
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["location_id", "organization_id"], ["locations.id", "locations.organization_id"]
+        ),
+        CheckConstraint("revision >= 0", name="location_revision"),
+    )
+    location_id: Mapped[UUID] = mapped_column(primary_key=True)
+    is_synthetic: Mapped[bool] = mapped_column(Boolean, server_default="false")
+    revision: Mapped[int] = mapped_column(Integer, server_default="0")
+
+
+class TableEvent(Identified, Scoped, Base):
+    __tablename__ = "table_events"
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["table_id", "organization_id", "location_id"],
+            ["dining_tables.id", "dining_tables.organization_id", "dining_tables.location_id"],
+        ),
+        UniqueConstraint("location_id", "revision"),
+        CheckConstraint("confidence IS NULL OR confidence BETWEEN 0 AND 1", name="event_confidence"),
+        Index("event_location_order", "location_id", "revision"),
+    )
+    table_id: Mapped[UUID] = mapped_column()
+    revision: Mapped[int] = mapped_column(Integer)
+    event_type: Mapped[str] = mapped_column(String(64))
+    source: Mapped[str] = mapped_column(String(16))
+    actor_id: Mapped[UUID | None] = mapped_column(ForeignKey("identity.users.id"))
+    occurred_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    ingested_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    schema_version: Mapped[int] = mapped_column(Integer, server_default="1")
+    previous_state: Mapped[str] = mapped_column(String(30))
+    new_state: Mapped[str] = mapped_column(String(30))
+    payload: Mapped[dict] = mapped_column(JSONB)
+    confidence: Mapped[float | None] = mapped_column(Float, server_default=text("NULL"))
+
+
+class StaffTask(Identified, Created, Scoped, Base):
+    __tablename__ = "staff_tasks"
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["table_id", "organization_id", "location_id"],
+            ["dining_tables.id", "dining_tables.organization_id", "dining_tables.location_id"],
+        ),
+        UniqueConstraint("table_id", "occupancy_session_id"),
+        CheckConstraint("type = 'RESET'", name="reset_task_type"),
+        CheckConstraint(
+            "status IN ('OPEN','ACKNOWLEDGED','IN_PROGRESS','COMPLETED','CANCELLED')",
+            name="task_status",
+        ),
+        Index(
+            "one_active_reset_task", "table_id", unique=True,
+            postgresql_where=text("status IN ('OPEN','ACKNOWLEDGED','IN_PROGRESS')"),
+        ),
+    )
+    table_id: Mapped[UUID] = mapped_column()
+    occupancy_session_id: Mapped[UUID] = mapped_column()
+    status: Mapped[str] = mapped_column(String(24), server_default="OPEN")
+    type: Mapped[str] = mapped_column(String(24), server_default="RESET")
+    acknowledged_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    resolution: Mapped[str | None] = mapped_column(String(80))
+
+
+class ActionReceipt(Scoped, Base):
+    __tablename__ = "action_receipts"
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["table_id", "organization_id", "location_id"],
+            ["dining_tables.id", "dining_tables.organization_id", "dining_tables.location_id"],
+        ),
+    )
+    actor_id: Mapped[UUID] = mapped_column(ForeignKey("identity.users.id"), primary_key=True)
+    location_id: Mapped[UUID] = mapped_column(primary_key=True)
+    request_key: Mapped[UUID] = mapped_column(primary_key=True)
+    table_id: Mapped[UUID] = mapped_column()
+    fingerprint: Mapped[str] = mapped_column(String(64))
+    result: Mapped[dict] = mapped_column(JSONB)

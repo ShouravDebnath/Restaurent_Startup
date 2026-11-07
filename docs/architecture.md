@@ -1,9 +1,17 @@
 # Restaurant AI Monitoring Architecture
 
-**Status:** Phases 0–2 implemented for local development. The edge/video/live-workflow pipeline below remains the target for later phases.
+**Status:** Phases 0–3 implemented for local development. Real edge/video/analytics work remains planned.
 **Source:** `docs/MASTER_SPEC.md`
 
-Current source includes local Argon2id authentication, revocable server sessions, strict resource APIs, a real multi-restaurant PostgreSQL schema, explicit memberships/location grants, backend authorization plus PostgreSQL RLS, atomic audits, and connected Next.js configuration screens. Health and public synthetic demo behavior remain. Camera processing, device credentials/synchronization, live dashboard workflows, SSE, analytics, and billing are not implemented. See [PHASE_02.md](phase_explanations/PHASE_02.md) for actual verification and limitations.
+Current source includes local Argon2id authentication, revocable server sessions, strict scoped configuration APIs, explicit memberships/location grants, backend authorization plus RLS, atomic audits, and a DEMO dashboard with saved states/tasks/history and SSE. Camera processing, device credentials/synchronization, analytics and billing remain planned. See [PHASE_03.md](phase_explanations/PHASE_03.md) for current evidence and limits; Phase 2 records remain historical.
+
+## Implemented Phase 3 workflow
+
+The browser loads a consistent PostgreSQL snapshot through the fixed Next.js proxy, then subscribes to an authenticated location stream. A controlled database action function checks current location/role, expected revision and duplicate key, then commits state/task/event/audit/receipt together. Staff cannot generally update table state/configuration columns. Location publication locks preserve committed event order. All new operational tables have RLS and composite scoped references.
+
+GET/SSE reads use passive session validation and cannot refresh idle expiry. Streams use short transactions between bounded replay batches and two-second heartbeats, with disconnect cleanup and per-process admission limits. Active CSRF-protected mutations refresh idle activity but never absolute expiry. The proxy streams incrementally with separate connection/read deadlines; reconnect refreshes the snapshot. Browser selection changes cancel previous reads/streams and clear previous location data.
+
+Synthetic inputs require enabled DEMO_MODE, a marked synthetic location and an assigned manager/admin. They are explicit inputs, not an automatic background simulation or real video frames. Source failure makes unconfirmed observations UNKNOWN while preserving manually confirmed ready/cleaning/blocked states and timestamps, as the founder approved. Offline-source readiness is not counted as currently verified; browser outages show STALE and pause actions. Reopening requires a new ready confirmation. No actual camera-health or measured-confidence claim is made.
 
 ## Implemented Phase 2 request boundary
 

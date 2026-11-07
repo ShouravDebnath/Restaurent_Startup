@@ -77,9 +77,17 @@ def provision_runtime(engine, username: str, password: str) -> None:
             "GRANT SELECT,UPDATE ON public.organizations,public.locations TO {}",
             (
                 "GRANT SELECT,INSERT,UPDATE ON public.memberships,public.location_grants,"
-                "public.cameras,public.dining_tables,public.table_zones TO {}"
+                "public.cameras,public.table_zones TO {}"
             ),
             "GRANT SELECT,INSERT ON public.audit_logs TO {}",
+            "REVOKE ALL ON public.dining_tables FROM {}",
+            "GRANT SELECT ON public.dining_tables TO {}",
+            "GRANT INSERT(id,organization_id,location_id,label,seats) ON public.dining_tables TO {}",
+            "GRANT UPDATE(label,seats) ON public.dining_tables TO {}",
+            (
+                "GRANT SELECT ON public.location_operations,public.table_events,"
+                "public.staff_tasks,public.action_receipts TO {}"
+            ),
         ]
         for statement in statements:
             cursor.execute(sql.SQL(statement).format(sql.Identifier(username)))
@@ -237,7 +245,7 @@ def seed_demo(engine, private_path: Path, namespace: str = "local-phase2") -> di
 def main() -> int:
     parser = argparse.ArgumentParser(description="Explicit Phase 2 local administration")
     parser.add_argument(
-        "command", choices=["prepare", "migrate", "provision", "seed", "create-user"]
+        "command", choices=["prepare", "migrate", "provision", "seed", "seed-dashboard", "create-user"]
     )
     parser.add_argument("--env-file", type=Path, default=Path(".env"))
     parser.add_argument("--host", default="127.0.0.1")
@@ -285,6 +293,14 @@ def main() -> int:
                     output.write(f"\nAPP_DB_USER={username}\nAPP_DB_PASSWORD={password}\n")
         elif args.command == "seed":
             seed_demo(engine, args.credentials_file)
+        elif args.command == "seed-dashboard":
+            from restaurant_api.dashboard_seed import seed_dashboard
+
+            seed = json.loads(args.credentials_file.read_text(encoding="utf-8"))
+            result = seed_dashboard(engine, seed)
+            args.credentials_file.with_name("phase3-demo-layout.json").write_text(
+                json.dumps(result, indent=2), encoding="utf-8"
+            )
         elif args.command == "create-user":
             email = normalized_email(input("Email: "))
             name = input("Display name: ").strip()

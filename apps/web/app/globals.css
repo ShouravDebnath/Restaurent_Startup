@@ -70,3 +70,73 @@ fieldset { border: 1px solid var(--line); border-radius: 5px; min-width: 0; padd
 legend { font: 600 0.85rem Arial, sans-serif; }
 .audit-list p { border-bottom: 1px solid var(--line); display: flex; flex-wrap: wrap; font: 0.85rem/1.5 Arial, sans-serif; gap: 1rem; justify-content: space-between; padding-bottom: 0.6rem; }
 @media (max-width: 680px) { .member-form { grid-template-columns: 1fr; } .inline-form { align-items: stretch; flex-direction: column; } .workspace-header { align-items: flex-start; } .switcher label, .switcher select { width: 100%; } }
+:focus-visible { outline: 3px solid #1d4f3b; outline-offset: 4px; }
+.dashboard-shell { max-width: 1480px; margin: 0 auto; padding: 30px 28px 64px; }
+.dashboard-header, .dashboard-header nav, .dashboard-toolbar, .dashboard-connection,
+.panel-heading { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
+.dashboard-header h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); margin: 16px 0 24px; }
+.dashboard-header nav { justify-content: flex-end; }
+.dashboard-toolbar { justify-content: flex-start; padding: 20px; background: #fff; border: 1px solid #e5e8e0; border-radius: 16px; }
+.dashboard-toolbar label { display: grid; gap: 6px; min-width: 190px; flex: 1; font-size: .86rem; }
+.dashboard-toolbar select, .manager-actions select { padding: 11px; border: 1px solid #b8c1b5; border-radius: 9px; background: white; max-width: 100%; width: 100%; }
+.demo-notice { padding: 14px 18px; border: 1px solid #b9d7c5; background: #edf6ee; border-radius: 12px; font-size: .9rem; line-height: 1.6; }
+.dashboard-connection { color: #314c3c; padding: 6px 0 16px; font-size: .85rem; }
+.offline-banner { padding: 14px 18px; background: #fff0d2; color: #654008; border: 1px solid #d6ae64; border-radius: 10px; }
+.floor-summary { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 10px; margin: 12px 0 24px; }
+.floor-summary > div { background: #fff; border: 1px solid #dfe4da; padding: 16px 12px; border-radius: 12px; display: grid; gap: 5px; }
+.floor-summary strong { font-size: 1.65rem; color: #173f2d; }
+.floor-summary span { font-size: .78rem; color: #4f5d51; }
+.floor-workspace { display: grid; grid-template-columns: minmax(0, 1fr) 350px; gap: 22px; align-items: start; }
+.floor-panel, .table-details, .task-panel, .activity-panel { background: white; border: 1px solid #dfe4da; border-radius: 16px; padding: 22px; min-width: 0; }
+.floor-panel h2, .staff-panel h2, .activity-panel h2 { font-size: 1.2rem; margin: 0 0 14px; }
+.floor-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; padding: 26px 0; }
+button.floor-table { color: #1c3427; background: #f6f7f3; border: 2px solid #c6cdc2; padding: 18px 14px; border-radius: 18px; display: grid; gap: 15px; text-align: left; min-height: 190px; cursor: pointer; box-shadow: none; }
+button.floor-table:hover, button.floor-table.selected { outline: 3px solid #234b37; outline-offset: 3px; transform: none; }
+button.state-available { background: #e9f5e9; border-color: #6d9c72; }
+button.state-occupied { background: #eaf0fb; border-color: #7b94b9; }
+button.state-reset_pending { background: #fff1cf; border-color: #be9644; }
+button.state-cleaning { background: #e5f4f1; border-color: #5d9c92; }
+button.state-out_of_service { background: #f6e8ea; border-color: #ae737b; }
+button.state-unknown { background: #efefed; border-color: #999e96; }
+.table-name { font-size: 1.6rem; font-weight: 700; display: flex; gap: 6px; align-items: center; justify-content: space-between; }
+.table-name > span { font-size: .7rem; font-weight: 400; }
+.table-status { font-size: .9rem; font-weight: 700; }
+.table-timer { font-variant-numeric: tabular-nums; font-size: 1.5rem; font-weight: 500; }
+.table-timer small { font-size: .7rem; font-weight: 400; display: block; margin-top: 5px; }
+.source-warning { font-size: .73rem; color: #6b3912; }
+.manual-label { font-size: .7rem; color: #405b48; }
+.floor-legend { display: flex; gap: 12px; flex-wrap: wrap; font-size: .78rem; padding: 12px 0; border-top: 1px solid #e4e8de; }
+.staff-panel { display: grid; gap: 20px; }
+.staff-actions { display: grid; gap: 8px; margin: 15px 0; }
+.manager-actions { display: grid; gap: 8px; margin-top: 16px; }
+.manager-actions label { display: grid; gap: 5px; font-size: .8rem; }
+.simulation-controls { margin-top: 20px; border-top: 1px solid #dde4d7; padding-top: 15px; }
+.simulation-controls summary { cursor: pointer; font-weight: 600; font-size: .9rem; padding: 6px 0; }
+.simulation-controls > div { display: flex; flex-wrap: wrap; gap: 8px; }
+.simulation-controls button, .cleaning-task button { font-size: .8rem; padding: 9px 11px; }
+.cleaning-task { padding: 16px 0; border-top: 1px solid #e1e6dc; }
+.cleaning-task h3 { font-size: .94rem; margin: 0; }
+.cleaning-task p { font-size: .8rem; }
+.cleaning-task > div { display: flex; flex-wrap: wrap; gap: 7px; }
+.activity-panel { margin-top: 24px; }
+.activity-panel ol { list-style: none; padding: 0; margin: 0; }
+.activity-panel li { display: grid; grid-template-columns: 205px minmax(0, 1fr) 95px; gap: 15px; align-items: center; padding: 12px 0; border-bottom: 1px solid #edf0e9; font-size: .82rem; overflow-wrap: anywhere; }
+.activity-panel time { color: #53634f; }
+@media (max-width: 1000px) {
+  .floor-workspace { grid-template-columns: minmax(0, 1fr); }
+  .staff-panel { grid-template-columns: 1fr 1fr; align-items: start; }
+  .floor-summary { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+@media (max-width: 600px) {
+  .dashboard-shell { padding: 20px 14px 40px; }
+  .dashboard-toolbar { padding: 14px; }
+  .dashboard-toolbar label { min-width: 0; flex-basis: 100%; }
+  .floor-summary { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; }
+  .floor-summary > div { padding: 12px 8px; }
+  .floor-summary span { font-size: .7rem; }
+  .floor-panel, .table-details, .task-panel, .activity-panel { padding: 16px; }
+  .floor-grid { grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; }
+  .staff-panel { grid-template-columns: 1fr; }
+  .activity-panel li { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+  .dashboard-header nav { justify-content: flex-start; }
+}

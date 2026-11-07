@@ -76,7 +76,8 @@ def test_foreign_updates_and_inserts_are_blocked_by_database(suite):
             ),
             {"id": uuid4(), "org": b["id"], "loc": b["locations"][0]},
         )
-    with pytest.raises(IntegrityError), Session(suite.runtime) as db, db.begin():
+    # Column privileges now reject reparenting before the immutable-ownership trigger.
+    with pytest.raises(DBAPIError), Session(suite.runtime) as db, db.begin():
         set_identity(db, actor)
         db.execute(
             text("UPDATE dining_tables SET location_id=:loc WHERE id=:id"),
@@ -145,7 +146,7 @@ def test_migrations_preserve_preexisting_data_and_seed_is_repeatable(suite, tmp_
                 connection.scalar(text("SELECT value FROM preservation_sentinel WHERE id=1"))
                 == "keep this synthetic row"
             )
-            assert connection.scalar(text("SELECT version_num FROM alembic_version")) == "0002"
+            assert connection.scalar(text("SELECT version_num FROM alembic_version")) == "0004"
             assert connection.scalar(text("SELECT count(*) FROM organizations")) == 2
     finally:
         engine.dispose()

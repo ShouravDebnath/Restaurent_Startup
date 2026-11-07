@@ -136,6 +136,7 @@ export default function SettingsPage() {
   return <main className="workspace">
     <header className="workspace-header">
       <Link className="brand" href="/">Restaurant AI Monitoring</Link>
+      <Link href="/dashboard">Open dashboard</Link>
       <div><span className="hint">{me.display_name}</span> <button className="secondary" disabled={busy || !csrf}
         onClick={() => void save("/v1/auth/session", "DELETE")}>Sign out</button></div>
     </header>

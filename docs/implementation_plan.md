@@ -1,6 +1,6 @@
 # Implementation Plan
 
-**Status:** Phases 0–2 implemented; Phase 2 locally verified on 2026-11-07. Stop for founder review before Phase 3.
+**Status:** Phases 0–3 implemented; Phase 3 local verification recorded in its explanation. Stop for founder review before Phase 4.
 **Rule:** Complete and verify one phase before beginning the next.
 
 Use [CODEX_HANDOFF.md](CODEX_HANDOFF.md) for the startup handoff and historical inspection, [PHASE_02.md](phase_explanations/PHASE_02.md) for current implementation/evidence, and the earlier [Phase 1 environment report](phase_explanations/PHASE_01.md#pre-phase-2-environment-and-repository-check-2026-11-07) as a historical maintenance record. Only phases explicitly marked implemented below are completed; later milestones remain planned.
@@ -38,7 +38,9 @@ Build the DEMO floor view, table states, timers, tasks, staff actions, SSE or ju
 
 **Exit:** Two demo tenants show separate end-to-end workflows without video.
 
-**Proposal only:** See [the detailed Phase 3 implementation plan](PHASE_03_IMPLEMENTATION_PLAN.md) for the exact master requirements, proposed data/actions/SSE architecture, technologies, security/dependency decisions, file areas, ordered steps, and acceptance tests. The [fresh pre-Phase 3 review](phase_explanations/PHASE_02.md#pre-phase-3-review-2026-11-07) passed all 152 existing tests again (13.05 seconds). A [local Phase 2 checkpoint](PHASE_02_CHECKPOINT.md) is prepared for explicit commit approval; Phase 3 implementation is not authorized by that commit approval and has not started.
+**Implemented:** [PHASE_03.md](phase_explanations/PHASE_03.md) documents the responsive DEMO floor/staff views, six saved states, timers, reset tasks, protected actions, controlled database mutation function, durable ordered events/audits, restricted synthetic scenarios and authenticated SSE. Founder decisions preserve manual states during source failure and prohibit passive idle refresh. Additive revisions 0003/0004 preserve prior records. The expanded suite passes 262 tests, including the original 152; final runtime/browser evidence is recorded in that explanation. Phase 4 remains unstarted.
+
+The [detailed Phase 3 plan](PHASE_03_IMPLEMENTATION_PLAN.md) records the approved requirements, architecture choices, implementation sequence and acceptance criteria. The [pre-Phase 3 review](phase_explanations/PHASE_02.md#pre-phase-3-review-2026-11-07) and [checkpoint manifest](PHASE_02_CHECKPOINT.md) preserve preparation history; the checkpoint was approved and created as `62ad229` before the separately approved Phase 3 implementation.
 
 ## Phase 4: local video and calibration
 
@@ -107,11 +109,11 @@ Only after Phase 9 and approval: add billing behind a feature flag, onboarding, 
 - The Markdown blueprint and `references/SR.mp4` are present. The master specification is byte-identical to the Markdown blueprint. A separate PDF was not found and is not required to read the available specification.
 - MP4 header inspection confirmed duration and dimensions. Visual frames were not re-reviewed during the handoff; earlier visual findings remain attributed to `docs/reference_analysis.md`. The reel is not authorized pilot/evaluation evidence by itself.
 - Phase 2 migrations, restricted runtime database access, rebuilt API/web images, and the running frontend/database path are now verified locally. A clean-machine installation and public production deployment are not verified. The original volume and database container were preserved, with a private backup restored in an isolated test database.
-- The project `.venv` includes approved Argon2 dependencies. The final 152-test Python run and lint pass, including the four original starter tests. Package versions are not fully locked; the Starlette test stack emits an HTTPX deprecation warning. Host Python 3.14/Node 26 differ from Docker/CI Python 3.12/Node 22.
+- The project `.venv` includes approved Argon2 dependencies. The Phase 3 suite passes 262 tests, including all 152 earlier cases and the four original starter tests. Package versions are not fully locked; the Starlette test stack emits an HTTPX deprecation warning. Host Python 3.14/Node 26 differ from Docker/CI Python 3.12/Node 22.
 - npm audit still reports 8 affected packages (1 high, 7 moderate); no npm upgrades or overrides were applied. Explicit frontend tracing configuration removes the duplicate-lockfile warning. Deprecated `next lint` remains for later reviewed migration.
-- Git checkpoint `6808a81` exists on local `main`; Phase 2 changes remain uncommitted for review. No remote was added/changed or pushed. Hosted CI is configured for isolated PostgreSQL but has not run remotely.
+- Git checkpoints `6808a81` and `62ad229` exist on local `main`; Phase 3 changes remain uncommitted for review. No remote was added/changed or pushed. Hosted CI is configured for isolated PostgreSQL but has not run remotely.
 - Compose now applies restricted runtime credentials and database-backed readiness; the API enforces `APP_ENV`, cookie/origin requirements, and `DEMO_MODE`. Administrative secrets stay outside API runtime. Private values/backups remain ignored, and `.dockerignore` protects build contexts. Production secret storage, non-root images, TLS, admin MFA/recovery, and external review remain open.
 - The preserved legacy database administrator password is weak. The approved plan forbids rotating it in this phase; obtain approval for a reviewed rotation before public/pilot use. Runtime/demo credentials are separately generated and private.
-- Identity/session, roles, explicit grants, RLS, safe test databases, and later-schema boundaries were approved and implemented. Hardware, model licensing, consent, video, real metrics, and external services remain unverified for later phases. No later-phase feature is implemented.
+- Identity/session, grants/RLS, safe tests and the Phase 3 synthetic event/task/SSE workflow are implemented. Hardware, model licensing, consent, video, real metrics and external services remain unverified. No Phase 4–10 feature is implemented.
 
-See [PHASE_02.md](phase_explanations/PHASE_02.md) for current commands, outcomes, risk details, and acceptance mapping. Stop for founder review; Phase 3 requires separate approval.
+See [PHASE_03.md](phase_explanations/PHASE_03.md) for current commands, outcomes, risk details and limitations. Stop for founder review; Phase 4 requires separate approval.

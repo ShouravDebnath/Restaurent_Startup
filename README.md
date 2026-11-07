@@ -1,6 +1,6 @@
 # Restaurant AI Monitoring
 
-Privacy-first restaurant table operations SaaS. Phases 0–2 provide the specification, repository foundation, a real multi-restaurant PostgreSQL database, local sign-in, backend/database authorization, and connected configuration screens. Live camera access, inference, floor-map simulation, tasks, analytics, and billing remain later milestones. Phase 3 has not started.
+Privacy-first restaurant table operations SaaS. Phases 0–3 provide the specification, foundation, multi-restaurant database, sign-in/authorization/configuration, and an interactive DEMO floor dashboard with persistent timers, tasks, staff actions, activity and SSE updates. Real camera access, inference, device synchronization, analytics and billing remain later milestones. Phase 4 has not started.
 
 ## Documentation and current status
 
@@ -10,14 +10,17 @@ Privacy-first restaurant table operations SaaS. Phases 0–2 provide the specifi
 - [Phase explanations and index](docs/phase_explanations/README.md): beginner-friendly phase records.
 - [Phase 2 explanation](docs/phase_explanations/PHASE_02.md): setup, architecture, roles, APIs, actual verification, and remaining limitations.
 - [Approved Phase 2 design](docs/PHASE_02_ARCHITECTURE_PROPOSAL.md): authentication/isolation alternatives and the founder's approved choices.
-- [Fresh Phase 2 review](docs/phase_explanations/PHASE_02.md#pre-phase-3-review-2026-11-07) and [local checkpoint manifest](docs/PHASE_02_CHECKPOINT.md): 152 tests passed again; commit awaits approval.
-- [Detailed Phase 3 proposal](docs/PHASE_03_IMPLEMENTATION_PLAN.md): requirements, security choices, technology, implementation sequence and acceptance tests; no Phase 3 implementation yet.
+- [Fresh Phase 2 review](docs/phase_explanations/PHASE_02.md#pre-phase-3-review-2026-11-07) and [historical checkpoint manifest](docs/PHASE_02_CHECKPOINT.md): foundation saved as `62ad229` on local `main`.
+- [Phase 3 explanation](docs/phase_explanations/PHASE_03.md): dashboard behavior, current verification, Windows commands and limits.
+- [Approved Phase 3 plan](docs/PHASE_03_IMPLEMENTATION_PLAN.md) and [required credential rotation procedure](docs/DATABASE_CREDENTIAL_ROTATION.md).
 
 The 2026-11-07 Phase 2 check passed 152 Python tests with real PostgreSQL, Python lint/dependency checks, frontend lint/types/build, running-stack checks, and an actual Edge browser flow. Cross-restaurant and explicit location boundaries are enforced by FastAPI and PostgreSQL RLS. The existing database container/volume was retained, backed up, and upgraded with additive migrations. Ports remain restricted to this PC. Read the [Phase 2 results](docs/phase_explanations/PHASE_02.md#actual-verification-results) for exact scope; earlier Phase 1 reports are historical.
 
 ## Repository layout
 
-- `apps/web`: Next.js landing page, sign-in, configuration screens, fixed API proxy.
+To open the configured Phase 3 workspace, visit `http://localhost:3000/dashboard` and sign in with a privately stored demo account. Select **DEMO A Dining Room** or **DEMO B Dining Room**. For a checkout that has only the Phase 2 seed, follow [Phase 3 setup](docs/phase_explanations/PHASE_03.md#windows-11-run-instructions), including the explicit `management seed-dashboard` command; it adds records without resetting existing data.
+
+- `apps/web`: Next.js landing/sign-in/settings, DEMO floor/staff dashboard, fixed HTTP/SSE proxy.
 - `services/api`: FastAPI authentication/resources, PostgreSQL models, migrations, administration, security tests.
 - `services/edge-agent`: Python edge-agent package placeholder.
 - `packages/contracts`: versioned shared contract notes.
@@ -76,4 +79,4 @@ The project `.venv` works without `PYTHONPATH` overrides. CI now configures isol
 
 Remaining findings: npm audit reports 8 affected entries (1 high, 7 moderate), `next lint` is deprecated, and Starlette/HTTPX emits a test warning. The legacy database administrator password is weak and was preserved as instructed; rotate it through a reviewed procedure before public/pilot use. The API uses a separate generated password. Managed MFA, email verification/account recovery, production TLS/secret storage/hardening, dependency remediation, external security review, and later camera/device features remain open. See the full [limitations](docs/phase_explanations/PHASE_02.md#remaining-limitations-and-technical-debt).
 
-The existing local checkpoint is `6808a81b7339f241701eb03552d952827872f168` on `main`. Phase 2 changes are uncommitted for founder review; no remote was added/changed and nothing was pushed. `.gitignore` protects private environments/credentials, dependencies, generated files, databases/backups, footage, and model assets. Ignore rules cannot detect secrets embedded in source or prevent forced additions; review each future commit.
+The latest local checkpoint is `62ad22996f6e369c9116028ba0266ed3102b2e94` on `main`, saving Phase 2. Phase 3 changes remain uncommitted for founder review; no remote was added/changed and nothing was pushed. `.gitignore` protects private environments/credentials, dependencies, generated files, databases/backups, footage, and model assets. Ignore rules cannot detect secrets embedded in source or prevent forced additions; review each future commit.

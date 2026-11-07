@@ -12,6 +12,7 @@ from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from restaurant_api.routes import router
 from restaurant_api.security import Db
 from restaurant_api.settings import get_settings
+from restaurant_api.workflow import router as workflow_router
 
 
 class HealthResponse(BaseModel):
@@ -41,6 +42,7 @@ class DemoTenantResponse(BaseModel):
 def create_app() -> FastAPI:
     app = FastAPI(title="Restaurant AI Monitoring API", version="0.2.0")
     app.include_router(router)
+    app.include_router(workflow_router)
 
     def error_response(request, status, message):
         codes = {

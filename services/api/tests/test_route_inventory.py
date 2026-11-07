@@ -17,6 +17,16 @@ def test_every_resource_route_has_negative_security_coverage(suite):
         ("POST", "/v1/organizations"),
     }
     public = {("POST", "/v1/auth/session"), ("GET", "/v1/demo/tenant")}
+    # Every Phase 3 route below is exercised anonymously and in both tenant directions
+    # by test_dashboard.py::test_dashboard_routes_reject_foreign_and_anonymous_access.
+    covered |= {
+        ("GET", "/v1/locations/{id}/dashboard"),
+        ("GET", "/v1/locations/{id}/tasks"),
+        ("GET", "/v1/locations/{id}/activity"),
+        ("GET", "/v1/locations/{id}/stream"),
+        ("POST", "/v1/locations/{id}/demo/events"),
+        ("POST", "/v1/tables/{id}/actions"),
+    }
     actual = {
         (method.upper(), normalize(path))
         for path, operations in suite.app.openapi()["paths"].items()

@@ -1,9 +1,11 @@
 # Phase 3 proposal: a dashboard that works with simulation
 
 **Prepared:** 2026-11-07, Asia/Dhaka.
-**Status:** PROPOSED; founder approval pending. No Phase 3 application code, migration, dependency installation, or demo event generation has started.
+**Status:** Approved by the founder and implemented in Phase 3; see [the phase explanation](phase_explanations/PHASE_03.md) for actual verification and limitations. This document preserves the proposal and sequence; the later founder decisions below supersede conflicting original options.
 **Authority:** [MASTER_SPEC.md, section 17, Phase 3](MASTER_SPEC.md#phase-3---first-working-dashboard-with-simulation), with sections 7, 11, and 12 providing state, dashboard, and security rules.
 **Foundation:** [Phase 2 implementation and fresh review](phase_explanations/PHASE_02.md#pre-phase-3-review-2026-11-07); [proposed local checkpoint](PHASE_02_CHECKPOINT.md).
+
+**Approved decisions:** manager/admin-only block/reopen; passive viewing/SSE never refresh idle expiry; absolute expiry always applies; simulation requires DEMO_MODE, a synthetic location and manager/admin access; existing npm findings accepted only for restricted local development; existing database credentials preserved with a [required pre-pilot rotation procedure](DATABASE_CREDENTIAL_ROTATION.md); manually confirmed ready/cleaning/blocked states and timers survive simulated source failure while source health remains visibly unavailable. Phase 2 checkpoint `62ad229` on `main` is complete. No Phase 4 approval is implied.
 
 ## 1. What the approved specification requires
 
@@ -26,7 +28,7 @@ The master also uses “Phase 3” for a later commercial product expansion in s
 | P3-09: truthful simulation | Persistent DEMO labels; synthetic scenario controls are disabled outside permitted demo locations | Disabled-mode, non-demo-location, unauthorized actor and source-label tests |
 | P3-10: preserve the foundation | Existing login/configuration/health/demo contracts and records preserved | Existing 152-test regression plus new tests, lint/type/build and additive-migration preservation checks |
 
-This is a future checklist. None of its Phase 3 tests has passed yet.
+This table defined the original acceptance checklist. Current passed checks and remaining limits are recorded in the Phase 3 explanation; the proposal is not a substitute for that evidence.
 
 ## 2. How it fits the complete restaurant system
 
@@ -47,7 +49,7 @@ flowchart LR
     DB -.->|Phase 7| REPORTS
 ```
 
-For example, a DEMO operator simulates guests arriving at A's Table 4. A's browsers show OCCUPIED and its saved timer. Simulated departure creates RESET_PENDING and one task. A staff member acknowledges, starts cleaning, then confirms ready. B receives none of A's updates. A lost source becomes UNKNOWN; a lost browser connection shows a stale banner. No real camera or AI is needed.
+For example, a DEMO operator simulates guests arriving at A's Table 4. A's browsers show OCCUPIED and its saved timer. Simulated departure creates RESET_PENDING and one task. A staff member acknowledges, starts cleaning, then confirms ready. B receives none of A's updates. A lost source makes unconfirmed observations UNKNOWN; manual states remain with an offline source warning. A lost browser connection shows a stale banner. No real camera or AI is needed.
 
 Phases 4–6 later replace synthetic observations with authorized local video, a reviewed detector, and durable device delivery. Phase 7 connects real edge events to the workflow and adds analytics/exports. Phase 3 needs the small event/task slice for its own demonstration; it does not implement real edge ingestion, device pairing, offline edge queues, detector hysteresis, or analytics early.
 
@@ -71,7 +73,7 @@ Recommended choices for founder review:
 4. Keep business configuration and operational permissions distinct. Staff must not gain general UPDATE permission over table labels, seats, ownership, or state. Propose a narrowly granted database action function, following the existing controlled-function pattern: fixed search path, no PUBLIC execution, server-verified identity, current role/location checks, allowed transition, row lock, expected revision, idempotency, and atomic state/task/event/audit writes. Its privileged owner requires explicit review; never assume RLS automatically constrains a SECURITY DEFINER owner. Test both the HTTP boundary and direct runtime-role calls. Installer has no operational mutation permission.
 5. Permit simulation only when the server's demo feature flag is enabled **and** the target location is explicitly marked synthetic. Existing DEMO_MODE currently gates only the public static demo route, so a flag alone is insufficient. Only an owner/admin/manager with a location grant may send a bounded predefined demo scenario. Staff operate normal tasks, not simulation. No background simulation runs on application startup.
 
-These are proposed Phase 3 choices, not additional work already approved or performed.
+These choices were approved with the founder decisions above. Their concrete implementation and actual evidence are recorded in the phase explanation.
 
 ## 4. Data and workflow design to approve before coding
 
@@ -101,7 +103,7 @@ All operational permissions additionally require enabled membership and an expli
 
 The master section 4 briefly says staff can set out of service, while its canonical state rule in section 7 and role description reserve that action for a manager. This proposal chooses the narrower manager/admin permission and makes that choice explicit for approval.
 
-Valid demonstration path: UNKNOWN → staff confirms initial ready → AVAILABLE → simulated arrival → OCCUPIED → simulated departure → RESET_PENDING → staff Start cleaning → CLEANING → staff Mark ready → AVAILABLE. Acknowledgement alone never changes table state. A duplicate departure/request cannot open another task. Occupancy return resolves an obsolete reset task explicitly. Source loss makes observed status UNKNOWN; an explicit manager OUT_OF_SERVICE block remains blocked with a separate source-offline label. Preserve manual cleaning/block precedence and audit any conflicting synthetic observation. On recovery, require fresh evidence and the permitted confirmation path; do not restore availability from a cached state.
+Valid demonstration path: UNKNOWN → staff confirms initial ready → AVAILABLE → simulated arrival → OCCUPIED → simulated departure → RESET_PENDING → staff Start cleaning → CLEANING → staff Mark ready → AVAILABLE. Acknowledgement alone never changes table state. A duplicate departure/request cannot open another task. Occupancy return resolves an obsolete reset task explicitly. Source loss makes unconfirmed observations UNKNOWN; manually confirmed AVAILABLE, CLEANING and OUT_OF_SERVICE retain their state-entry times with a separate offline warning. Do not count unavailable-source readiness as currently verified. Preserve cleaning/block precedence on conflicting inputs; never infer readiness from a cached state.
 
 These are demo workflow rules. The full video observation/grace-period state engine belongs to Phase 5. Staff confirmation means a human says the table is ready; it does not mean software has proved cleanliness.
 
@@ -124,9 +126,9 @@ Reject foreign IDs/cursors and extra tenant/location/state fields. Continue 401/
 2. Update the fixed Next.js proxy to forward the replay header and stream incrementally. Its current 10-second fetch timeout is inappropriate for a long-lived stream. Retain ordinary request limits and use stream-specific connection/heartbeat deadlines, no buffering/caching, and cancellation when the browser disconnects. Do not expose arbitrary upstream URLs.
 3. A long stream must not reuse Phase 2's request-scoped Session/transaction. Authenticate before opening, then use short transactions to re-check current session/membership/grants, set transaction-local identity, fetch bounded batches, and close/commit before waiting. Run synchronous database calls outside the async event loop. Never hold a connection, row lock or transaction during a network wait.
 4. Re-check permission and expiry before every emitted batch and heartbeat; close and clear the client workspace when expired/revoked/disabled. Never place a session token in a URL, cursor, message body or log. Native same-origin EventSource sends the HttpOnly cookie; a GET stream does not replace CSRF protection on POST actions.
-5. Define bounded connection count, payload size, replay page size, reconnect backoff and slow-client handling. Proposal: heartbeat at most every 5 seconds; mark disconnected/stale after 15 seconds without valid contact. These are demo defaults to measure, not established performance results. A connection must not extend the session's absolute limit. Decide explicitly whether passive viewing refreshes idle time and test the chosen policy.
+5. Implemented bounds are a two-second heartbeat, stale after 15 seconds, four streams per user and 32 total per API process, and 100 replay rows per batch. These are local defaults, not a capacity guarantee. Passive HTTP viewing and every SSE check must not refresh idle expiry; absolute expiry always applies.
 6. Store safe ordered changes durably so API restart does not lose them. If a cursor is invalid, from another location, ahead of the current revision, or older than the supported replay range, require a fresh authorized snapshot. Version the envelope; tolerate duplicate deliveries on the client and preserve state revision ordering.
-7. Show browser connection freshness and simulated source health separately. During a network outage preserve last-known information with a prominent STALE label, suppress current-ready counts/actions, and never label a cached AVAILABLE value live. Simulated source failure emits UNKNOWN rather than AVAILABLE. No actual device/camera online claim exists in Phase 3.
+7. Show browser connection freshness and simulated source health separately. During a network outage preserve last-known information with a prominent STALE label, suppress current-ready counts/actions, and never label a cached AVAILABLE value live. Simulated source failure changes unconfirmed states to UNKNOWN and preserves manually confirmed states with an offline warning, per the founder decision. No actual device/camera online claim exists in Phase 3.
 8. On restaurant/location switch, close the previous stream, cancel pending requests, clear previous data immediately, and reject late responses from the former selection. Test this race, including multiple browser profiles and revoked grants.
 
 ## 5. Ordered implementation steps after approval
@@ -159,8 +161,8 @@ These are proposed change areas, not files changed by this review.
 
 | Finding | Required next action | Does it prevent a local synthetic Phase 3? |
 | --- | --- | --- |
-| Phase 2 has no saved checkpoint yet | Approve and create the reviewed local checkpoint before implementation | Yes: preserve the verified foundation first |
-| New workflow permissions/event ordering and SSE lifetime need decisions | Approve this proposal, especially the database action helper and stream permission checks | Yes: settle security behavior before coding |
+| Phase 2 checkpoint completed | `62ad22996f6e369c9116028ba0266ed3102b2e94` on local `main`; no push | Resolved |
+| Workflow permissions/event ordering and SSE lifetime | Approved and implemented; controlled database actions, passive expiry and scoped replay have tests | Resolved for the local milestone; production review remains |
 | npm audit: 8 affected packages, 1 high/7 moderate | Separate approved maintenance: investigate compatible parent updates; if needed review a narrow override, then lint/type/build/audit/browser checks. Do not run `audit fix --force` | Not a test failure, but resolve or explicitly accept restricted local-development risk before continuing; fix before external/pilot use |
 | Legacy database administrator password is weak | Obtain approval for a backed-up, tested rotation; preserve current volume and update only private administrative configuration | Keep localhost/private during local work; rotation is required before public/pilot use |
 | Production identity/security operations absent | TLS, admin MFA/recovery, secret management, non-root containers, retention/monitoring and external review remain open | They block public release; they do not require adding production services to this simulation milestone |
@@ -180,4 +182,4 @@ Recommendation: use a separate maintenance branch/checkpoint after approval, ins
 
 The proposed SSE design uses the browser's [EventSource event IDs/reconnect protocol](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events), the installed FastAPI/Starlette [StreamingResponse capability](https://fastapi.tiangolo.com/advanced/custom-response/#streamingresponse), and Next.js [streaming Route Handlers](https://nextjs.org/docs/app/api-reference/file-conventions/route#streaming). Current online documentation can describe versions newer than the project's pinned Next.js; implementation must be tested on the installed version, without assuming new framework APIs are available.
 
-Approval of a **local Phase 2 commit** does not authorize implementation of this proposal, dependency installation/major upgrades, credential rotation, a remote push, public deployment, or Phase 4. The founder should review these choices and separately approve Phase 3 before development begins.
+The local Phase 2 commit and Phase 3 implementation received separate explicit approvals. Phase 3 approval does not authorize major dependency upgrades, credential rotation, a remote push, public deployment or Phase 4. The founder's local-risk acceptance and manual-state/session decisions above govern this implementation.

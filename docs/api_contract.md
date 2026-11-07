@@ -1,11 +1,11 @@
 # Initial API Contract
 
-**Status:** Phase 2 authentication/configuration APIs implemented; later workflow/analytics/edge routes below remain planned.
+**Status:** Phase 2 authentication/configuration and Phase 3 synthetic workflow/SSE APIs implemented; analytics and real edge routes remain planned.
 **Version:** v1
 
 Phase 2 adds persistent configuration APIs with typed schemas, cookie sessions, role/location authorization, PostgreSQL RLS, audits, and safe protected-route errors. `GET /health`, database-backed `GET /ready`, and the hard-coded public synthetic `GET /v1/demo/tenant` remain distinct. The demo route never selects tenant rows and can be disabled with `DEMO_MODE=false`. Generated documentation/OpenAPI remain available. See [PHASE_02.md](phase_explanations/PHASE_02.md) for actual evidence and limitations.
 
-All routes return typed JSON schemas. All times are ISO 8601 UTC unless a response explicitly says it is display-local. Every location route performs backend authorization; hidden frontend controls are not an authorization boundary.
+JSON routes return typed schemas; SSE frames carry versioned typed operational events. All times are ISO 8601 UTC unless a response explicitly says it is display-local. Every location route performs backend authorization; hidden frontend controls are not an authorization boundary.
 
 ## Authentication and identity
 
@@ -15,6 +15,8 @@ All routes return typed JSON schemas. All times are ISO 8601 UTC unless a respon
 - `GET /v1/me`: return the user, enabled memberships, permitted organizations, and permitted locations.
 
 Human sessions are implemented; edge-device credentials/pairing/revocation remain later work and will be separate. Protected mutations require exact allowed Origin and X-CSRF-Token, in addition to the session cookie. Sessions expire after 30 minutes idle or 8 hours total by default. Resource responses never include password hashes or session tokens. Account provisioning is an explicit administrator command, not public signup; managed MFA, recovery, and email verification are unavailable.
+
+Phase 3 GET/HEAD reads and SSE checks use passive validation and never refresh idle time. Successful protected mutations count as activity; absolute expiry is unchanged. Streams recheck expiry/user/membership/location access in short transactions and close on loss of access. See [PHASE_03.md](phase_explanations/PHASE_03.md).
 
 ## Implemented organization and configuration routes
 
@@ -42,11 +44,18 @@ Audit lists accept `limit` (1–100, default 50) and nonnegative `offset`. Owner
 - `GET /v1/locations/{location_id}/tables`: Phase 2 returns label/seats, current state, UTC state-entry/creation times, and ownership IDs. Confidence/observed camera health are not implemented. Camera/zone metadata use the separate routes above.
 - `POST /v1/locations/{location_id}/tables`: manager creates a table.
 - `PUT /v1/locations/{location_id}/table-zones/{zone_id}`: installer or manager saves a normalized polygon and calibration revision.
-- **Planned:** `POST /v1/tables/{table_id}/actions`: staff submits `acknowledge`, `start_cleaning`, `mark_ready`, or `out_of_service`.
-- **Planned:** `GET /v1/locations/{location_id}/tasks`: paginated staff tasks, sorted by age and filtered by status.
-- **Planned:** `GET /v1/locations/{location_id}/stream`: authorized SSE stream for state, task, and health changes.
+- **Implemented:** `POST /v1/tables/{table_id}/actions`: staff acknowledges, starts cleaning or explicitly confirms ready; manager/admin only blocks/reopens.
+- **Implemented:** `GET /v1/locations/{location_id}/tasks`: age-sorted RESET tasks, optional status filter, `limit` 1–100, `offset` 0–100000.
+- **Implemented:** `GET /v1/locations/{location_id}/stream`: authorized SSE; `Last-Event-ID` overrides an initial `after` cursor. Cursor is `location UUID:revision`, never a credential. Invalid/foreign/ahead cursors require reloading (409).
+- **Implemented:** `GET /v1/locations/{location_id}/dashboard`: consistent tables/active tasks/publication cursor, server UTC time, authorized location/role, DEMO/control flags, truncation flags (500 tables/100 tasks).
+- **Implemented:** `GET /v1/locations/{location_id}/activity`: safe operational history, scoped optional table filter and bounded pagination. Does not expose private membership/security audits to staff.
+- **Implemented:** `POST /v1/locations/{location_id}/demo/events`: arrive/depart/vacant/source_offline/source_resume, requiring DEMO_MODE plus a synthetic assigned location and manager/admin role.
 
 Action requests must include an expected current revision or state where needed, so conflicting manual operations produce a useful response rather than silently overwriting one another.
+
+Implemented bodies require `action`, nonnegative `expected_revision` and UUID `request_key`; staff actions may include `task_id`, strict boolean `confirmed`, and predefined `reason` code. Demo bodies additionally require a same-location `table_id`. Extra ownership/state fields are rejected. Same-key/same-payload retry returns the original committed result; changed payload/stale revision returns 409. Out-of-service reason codes are maintenance/reserved/safety/other. Ready confirmation requires CLEANING or initial UNKNOWN with current ONLINE/VACANT demo information. Reopen returns UNKNOWN. Source failure preserves manual states/timestamps but marks source information unavailable; only unconfirmed observations become UNKNOWN.
+
+New event/task/receipt tables are scoped by backend checks and RLS. Controlled actions commit state/task/event/audit/receipt atomically, with ordered location revisions. SSE sends `change`, `heartbeat`, `session_expired`, `access_lost` or `unavailable`; it reads at most 100 events per batch, with two-second heartbeat and per-process limits of four streams/user and 32 total. It does not hold a database transaction between frames. Browser reconnect obtains a fresh snapshot; Last-Event-ID replay is independently supported and tested. The fixed Next.js proxy forwards streams incrementally without the ordinary ten-second lifetime.
 
 ## Analytics — planned, not implemented
 
@@ -100,7 +109,7 @@ Do not disclose whether an inaccessible guessed ID exists. Protected routes use 
 
 ## API acceptance checks
 
-Phase 2 route/session/isolation/audit checks pass in real PostgreSQL tests. Device/event/analytics checks below remain future acceptance criteria and are not reported as passed.
+Phase 2 and synthetic Phase 3 route/session/isolation/audit/retry/stream checks pass in real PostgreSQL tests. Real device ingestion and analytics checks below remain future criteria. See the Phase 3 explanation for actual commands/counts and limitations.
 
 - A Restaurant A token cannot read or mutate Restaurant B records.
 - Altering organization or location fields in a request does not bypass authorization.

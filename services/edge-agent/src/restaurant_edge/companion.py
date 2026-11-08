@@ -65,6 +65,7 @@ class LocalSession:
         self.location = self.camera = self.source = None
         self.permission_error = None
         self.valid = True
+        self.analysis = None
 
 
 class Companion:
@@ -112,6 +113,9 @@ class Companion:
     def stop(self, session):
         with self.lock:
             if self.owner is session:
+                if session.analysis:
+                    session.analysis.stop('PREVIEW_ENDED')
+                    session.analysis = None
                 capture = self.active
                 self.active = self.owner = None
                 if capture:
@@ -171,6 +175,9 @@ class Companion:
         if session and session.valid:
             try:
                 self.permission(session)
+                with self.lock:
+                    if self.owner is session and session.analysis:
+                        session.analysis.tick()
             except HTTPException:
                 pass
 
@@ -185,7 +192,8 @@ class Companion:
 
 
 def create_companion(registry, *, api_url="http://127.0.0.1:8000", api_origin="http://localhost:3000",
-                     port=8765, cloud_factory=None, capture_factory=Capture):
+                     port=8765, cloud_factory=None, capture_factory=Capture, ai_debug=False,
+                     analysis_root=None, model_catalog=None, analysis_factory=None):
     origin = f"http://127.0.0.1:{port}"
     state = Companion(registry, cloud_factory or (lambda: CloudClient(api_url, api_origin)), capture_factory)
 
@@ -262,7 +270,7 @@ def create_companion(registry, *, api_url="http://127.0.0.1:8000", api_origin="h
 
     @app.get("/static/{name}")
     def asset(name: str):
-        if name not in {"editor.js", "style.css"}:
+        if name not in {"editor.js", "style.css", "analysis.js"}:
             raise HTTPException(404, "Not found.")
         return FileResponse(STATIC / name)
 
@@ -374,4 +382,8 @@ def create_companion(registry, *, api_url="http://127.0.0.1:8000", api_origin="h
         session = current(request)
         return session.cloud.request("GET", f"/v1/locations/{location_id}/table-zones/{zone_id}/revisions?limit=50")
 
+    from restaurant_edge.analysis_routes import install_routes
+    kwargs = {'factory': analysis_factory} if analysis_factory else {}
+    install_routes(app, state, current, enabled=ai_debug,
+                   root=analysis_root or Path('.secrets/phase5/profiles'), catalog=model_catalog, **kwargs)
     return app

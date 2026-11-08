@@ -2,6 +2,7 @@
 
 import json
 import threading
+from contextlib import nullcontext
 from urllib.parse import urlsplit
 
 import httpx
@@ -25,14 +26,16 @@ class CloudClient:
         self.origin, self.csrf = origin, None
         self.lock = threading.RLock()
 
-    def request(self, method, path, body=None):
+    def request(self, method, path, body=None, *, _parallel_read=False):
+        if _parallel_read and method != 'GET':
+            raise CloudFailure(422)
         if not path.startswith("/v1/") or ".." in path or "://" in path or "#" in path:
             raise CloudFailure(422)
         headers = {"Origin": self.origin}
         if self.csrf:
             headers["X-CSRF-Token"] = self.csrf
         try:
-            with self.lock, self.client.stream(method, path, json=body, headers=headers) as response:
+            with (nullcontext() if _parallel_read else self.lock), self.client.stream(method, path, json=body, headers=headers) as response:
                 if response.status_code not in {200, 201, 204}:
                     raise CloudFailure(response.status_code if response.status_code in {401,403,404,409,422,429} else 503)
                 data = bytearray()
@@ -43,6 +46,11 @@ class CloudClient:
                 return json.loads(data) if data else None
         except (httpx.HTTPError, ValueError):
             raise CloudFailure() from None
+
+    def passive(self, path):
+        # HTTPX Client supports shared-thread GETs. Keep slow AI metadata reads
+        # out of the serialization lock used by the permission watchdog.
+        return self.request('GET', path, _parallel_read=True)
 
     def login(self, email, password):
         result = self.request("POST", "/v1/auth/session", {"email": email, "password": password})

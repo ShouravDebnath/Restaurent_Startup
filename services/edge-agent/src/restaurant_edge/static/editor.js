@@ -59,4 +59,5 @@ async function poll(){if(!active||polling||document.hidden)return;polling=true;c
 window.addEventListener("offline",()=>{active=false;clearFrame();$("health").textContent="OFFLINE — preview cleared; explicitly reconnect";});
 document.addEventListener("visibilitychange",()=>{if(document.hidden){clearFrame();}});
 setInterval(poll,500);redraw();
+document.querySelector('#login button').disabled=false;
 json("session").then(s=>{csrf=s.csrf_token;return loadSetup();}).catch(()=>{});

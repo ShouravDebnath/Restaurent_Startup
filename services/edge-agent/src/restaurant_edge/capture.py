@@ -24,7 +24,8 @@ def silence_native_output(kind):
         os.dup2(sink.fileno(), 2)
 
 
-def reader_worker(definition, mailbox, cancel, fps, loop, factory=None):
+def reader_worker(definition, mailbox, cancel, fps, loop, factory=None,
+                  analysis_mailbox=None, analysis_enabled=None):
     silence_native_output(definition.kind)
     watch_parent()
     import cv2
@@ -60,6 +61,18 @@ def reader_worker(definition, mailbox, cancel, fps, loop, factory=None):
             last = frame.received_monotonic
             image = frame.pixels
             height, width = image.shape[:2]
+            if analysis_mailbox is not None and analysis_enabled.is_set():
+                sample = {"pixels": image.copy(), "received_at": frame.received_at.isoformat(),
+                          "received_monotonic": frame.received_monotonic,
+                          "sequence": frame.sequence, "generation": generation,
+                          "media_seconds": frame.media_seconds, "width": width, "height": height}
+                try:
+                    analysis_mailbox.put_nowait(sample)
+                except queue.Full:
+                    with contextlib.suppress(queue.Empty):
+                        analysis_mailbox.get_nowait()
+                    with contextlib.suppress(queue.Full):
+                        analysis_mailbox.put_nowait(sample)
             if width > 960:
                 image = cv2.resize(image, (960, max(1, round(height * 960 / width))))
             success, encoded = cv2.imencode(".jpg", image, [cv2.IMWRITE_JPEG_QUALITY, 75])
@@ -79,6 +92,9 @@ def reader_worker(definition, mailbox, cancel, fps, loop, factory=None):
             source.close()
         mailbox.close()
         mailbox.join_thread()
+        if analysis_mailbox is not None:
+            analysis_mailbox.cancel_join_thread()
+            analysis_mailbox.close()
 
 
 class Capture:
@@ -92,6 +108,8 @@ class Capture:
         self.process = self.cancel = self.mailbox = None
         self.job = None
         self.monitor = None
+        self.analysis_frames = self.analysis_enabled = None
+        self.analysis_requested = False
         self.latest = None
         self.metadata = {"status": "NOT_CONFIGURED", "reason": None, "synthetic": source.synthetic,
                          "kind": source.kind, "loop": loop, "sampling_fps": fps}
@@ -109,8 +127,15 @@ class Capture:
         ctx = multiprocessing.get_context("spawn")
         self.mailbox = ctx.Queue(maxsize=1)
         self.cancel = ctx.Event()
+        kwargs = {}
+        if self.worker is reader_worker:
+            self.analysis_frames = ctx.Queue(maxsize=1)
+            self.analysis_enabled = ctx.Event()
+            if self.analysis_requested:
+                self.analysis_enabled.set()
+            kwargs = {"analysis_mailbox": self.analysis_frames, "analysis_enabled": self.analysis_enabled}
         self.process = ctx.Process(target=self.worker,
-            args=(self.source, self.mailbox, self.cancel, self.fps, self.loop), daemon=True)
+            args=(self.source, self.mailbox, self.cancel, self.fps, self.loop), kwargs=kwargs, daemon=True)
         self.last_progress = time.monotonic()
         self.metadata.update(status="CONNECTING", reason=None)
         try:
@@ -140,6 +165,11 @@ class Capture:
             self.mailbox.cancel_join_thread()
             self.mailbox.close()
             self.mailbox = None
+        if self.analysis_frames is not None:
+            self.analysis_frames.cancel_join_thread()
+            self.analysis_frames.close()
+            self.analysis_frames = None
+            self.analysis_enabled = None
         if self.job:
             self.job.close()
             self.job = None
@@ -197,6 +227,22 @@ class Capture:
             if self.metadata["status"] != "ONLINE" or time.monotonic() - self.last_progress > self.watchdog:
                 return None
             return self.latest
+
+    def enable_analysis(self, enabled):
+        with self.lock:
+            self.analysis_requested = enabled
+            if self.analysis_enabled is not None:
+                self.analysis_enabled.set() if enabled else self.analysis_enabled.clear()
+
+    def raw_frame(self):
+        """Internal original BGR sample; never returned by a cloud/browser API."""
+        with self.lock:
+            if not self.analysis_requested or self.analysis_frames is None:
+                return None
+            try:
+                return self.analysis_frames.get_nowait()
+            except (queue.Empty, OSError, EOFError):
+                return None
 
     def stop(self):
         self.stopped.set()

@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Local AI shadow lab · Restaurant AI</title><link rel="stylesheet" href="/static/style.css">
+<script src="/static/analysis.js" defer></script></head><body>
+<header><a class="brand" href="/">Restaurant AI <span>Local shadow lab</span></a><span>Video stays local</span></header>
+<main><div class="intro"><p class="eyebrow">EXPERIMENTAL · NON-AUTHORITATIVE</p><h1>Test evidence before trusting estimates.</h1>
+<p>This lab does not change your dashboard, cleaning tasks or manager decisions. Only explicitly provisioned, approved local models can run. Only synthetic footage is approved; real-person accuracy remains unverified.</p></div>
+<p id="message" role="status" aria-live="polite"></p>
+<section id="signin" class="card"><h2>Sign in to the local lab</h2><form id="login" method="post" action="/local/v1/login">
+<label>Email<input name="email" type="email" autocomplete="username" required></label>
+<label>Password<input name="password" type="password" autocomplete="current-password" required></label><button disabled>Sign in</button></form></section>
+<div id="workspace" hidden>
+<section class="card"><p id="availability">Checking explicit lab enablement and model approvals.</p>
+<div class="controls"><label>Restaurant / location<select id="location"></select></label><label>Camera<select id="camera"></select></label>
+<label>Table<select id="table"></select></label><button id="logout" class="secondary">Sign out</button></div></section>
+<div class="layout"><section class="card viewer"><h2>Authorized original view</h2><p id="health">STOPPED</p>
+<div class="canvas-wrap"><canvas id="canvas" width="960" height="540" tabindex="0" aria-label="Seating region editor. Pause the frame and click corners, or use the coordinate controls."></canvas></div>
+<div class="toolbar"><button id="preview">Start synthetic preview</button><button id="pause" class="secondary">Pause / resume drawing</button>
+<button id="stop" class="secondary">Stop preview and analysis</button></div>
+<p id="frame-info">No picture. Passive viewing does not extend your sign-in.</p>
+<p class="hint">Boxes appear only on their exact source generation/frame. A missing box is not proof of vacancy. Browser disconnect or permission loss clears the picture.</p></section>
+<aside class="card"><h2>Separate seating profile</h2><p>These regions are stored locally. Saving here never edits the cloud table polygon or Revision 7.</p>
+<p id="revision">No local revision loaded</p><label>Draw region<select id="mode"><option value="seating">Seating evidence region</option><option value="exclusion">Aisle exclusion region</option></select></label>
+<label>Local detector<select id="model"><option value="yolox_tiny">YOLOX-Tiny (separate approval required)</option><option value="rfdetr_nano">RF-DETR Nano (CPU ONNX)</option></select></label>
+<label>Person anchor<select id="anchor"><option value="torso">Torso (55% down box)</option><option value="feet">Lower center / feet</option></select></label>
+<div class="coordinate"><label>X (0–1)<input id="x" type="number" min="0" max="1" step=".001" value=".1"></label>
+<label>Y (0–1)<input id="y" type="number" min="0" max="1" step=".001" value=".1"></label></div>
+<div class="toolbar"><button id="add" class="secondary">Add corner</button><button id="undo" class="secondary">Undo corner</button><button id="clear" class="secondary">Redraw selected region</button></div>
+<label class="check"><input id="visibility" type="checkbox">I reviewed this view; hidden seats still need uncertainty testing</label>
+<div class="toolbar"><button id="save">Save local seating revision</button><button id="reload" class="secondary">Reload local profile</button></div>
+<p class="hint">A manager must save the first profile and approve model or threshold changes. Installers can then edit geometry. Draft changes stay in memory until Save.</p>
+<details><summary>Thresholds (experimental, not probabilities)</summary>
+<label>Entry score<input id="entry" type="number" min=".05" max="1" step=".05" value=".6"></label>
+<label>Retention score<input id="retention" type="number" min=".05" max="1" step=".05" value=".4"></label>
+<label>Arrival seconds<input id="arrival" type="number" min="2" max="120" value="10"></label>
+<label>Departure seconds<input id="departure" type="number" min="5" max="300" value="25"></label></details>
+</aside></div>
+<section class="card"><h2>Local shadow observations</h2><p id="analysis-status">STOPPED — no inference has run</p>
+<div class="toolbar"><button id="analyze" disabled>Start approved detector</button><button id="analysis-stop" class="secondary">Stop analysis; keep preview</button></div>
+<p id="metrics">Performance is unmeasured until an approved real model runs.</p><div id="tables" class="controls" aria-live="polite"></div>
+<details><summary>Local transition history</summary><button id="events" class="secondary">Load this run's events</button><ol id="event-list"></ol></details>
+<p class="hint">UNKNOWN means insufficient reliable evidence. RESET_PENDING means “may need cleaning.” Only staff can confirm ready; only managers/admins can clear a block. No facial recognition, audio or customer identity.</p></section>
+</div></main><footer>Phase 5 local shadow lab · RF-DETR Nano: Apache-2.0 · Real-person evaluation pending</footer></body></html>

@@ -21,6 +21,11 @@ dependencies = [
 restaurant-edge = "restaurant_edge.cli:main"
 
 [project.optional-dependencies]
+ai = [
+  "onnxruntime==1.31.1",
+  "protobuf==7.36.2",
+  "flatbuffers==25.12.19",
+]
 dev = [
   "pytest>=8,<9",
   "ruff>=0.8,<1",
@@ -37,3 +42,6 @@ where = ["src"]
 
 [tool.setuptools.package-data]
 restaurant_edge = ["static/*.html", "static/*.js", "static/*.css"]
+
+[tool.setuptools.data-files]
+"share/restaurant-ai-edge-agent/licenses" = ["third_party/RFDETR_LICENSE.txt", "third_party/RFDETR.md"]

@@ -4,11 +4,11 @@
 <script src="/static/editor.js" defer></script></head><body>
 <header><a class="brand" href="/">Restaurant AI <span>Local setup</span></a><span>Video stays on this computer</span></header>
 <main><div class="intro"><p class="eyebrow">CAMERA & TABLE CALIBRATION</p><h1>Give every table its place.</h1>
-<p>Open an authorized source, pause a reference frame, and draw a table boundary. Occupancy analysis is not enabled.</p></div>
+<p>Open an authorized source, pause a reference frame, and draw a table boundary. <a href="/analysis">Open the separate local AI shadow lab</a> for reviewed seating profiles; it never changes operational table states.</p></div>
 <p id="message" role="status" aria-live="polite"></p>
 <section id="signin" class="card"><h2>Sign in for local setup</h2><p>Your restaurant account needs an assigned setup role and location. A manager must explicitly permit camera preview.</p>
-<form id="login"><label>Email<input name="email" type="email" autocomplete="username" required></label>
-<label>Password<input name="password" type="password" autocomplete="current-password" required maxlength="512"></label><button>Sign in</button></form></section>
+<form id="login" method="post" action="/local/v1/login"><label>Email<input name="email" type="email" autocomplete="username" required></label>
+<label>Password<input name="password" type="password" autocomplete="current-password" required maxlength="512"></label><button disabled>Sign in</button></form></section>
 <div id="workspace" hidden>
 <section class="card controls"><label>Restaurant / location<select id="location"></select></label>
 <label>Camera<select id="camera"></select></label><label>Table<select id="table"></select></label>
@@ -40,5 +40,5 @@
 <section class="card"><h2>Preview permission & source setup</h2><p>In restaurant settings, a manager can grant an eligible user 15 minutes of preview access and revoke it. Camera credentials are configured through the local terminal and Windows credential store; this page never requests them.</p>
 <a href="http://localhost:3000/settings" target="_blank" rel="noopener noreferrer">Open restaurant settings on this PC</a>
 <p class="hint">Only camera IDs, polygons, permissions and audits go to the API. No frames or audio are uploaded. Real camera compatibility must be verified individually.</p></section>
-</div></main><footer>Restaurant AI Monitoring · Phase 4 local video & calibration · No AI person detection</footer>
+</div></main><footer>Restaurant AI Monitoring · Local video & calibration · AI lab requires explicit enablement and approved weights</footer>
 </body></html>

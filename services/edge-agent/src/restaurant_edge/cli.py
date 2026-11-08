@@ -18,6 +18,9 @@ def main():
     serve.add_argument("--api", default="http://127.0.0.1:8000")
     serve.add_argument("--api-origin", default="http://localhost:3000")
     serve.add_argument("--port", type=int, default=8765)
+    serve.add_argument("--ai-debug", action="store_true", help="Enable the protected local shadow AI lab")
+    serve.add_argument("--analysis-root", type=Path, default=Path('.secrets/phase5/profiles'))
+    serve.add_argument("--models", type=Path, help="Private operator-reviewed model approval manifest; no download")
     credential = commands.add_parser("credential", help="Privately set a new Windows camera credential")
     credential.add_argument("--config", type=Path, required=True)
     credential.add_argument("--camera", required=True)
@@ -34,7 +37,10 @@ def main():
             if not 1024 <= args.port <= 65535:
                 raise ValueError("Invalid loopback port")
             registry = SourceRegistry.load(args.config)
-            app = create_companion(registry, api_url=args.api, api_origin=args.api_origin, port=args.port)
+            from restaurant_edge.detectors.onnx_detector import ModelCatalog
+            catalog = ModelCatalog.load(args.models) if args.models else ModelCatalog()
+            app = create_companion(registry, api_url=args.api, api_origin=args.api_origin, port=args.port,
+                                   ai_debug=args.ai_debug, analysis_root=args.analysis_root, model_catalog=catalog)
             uvicorn.run(app, host="127.0.0.1", port=args.port, access_log=False, log_level="warning")
         elif args.command == "credential":
             from restaurant_edge.secret_store import account, backend, save

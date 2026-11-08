@@ -4,7 +4,7 @@
 **Branch:** `main`.
 **Existing parent commit:** `899f74368b9487ae1c33e0d0c0e511e37b396f36` (`docs: verify phase 3 GitHub checkpoint`).
 **Requested local commit message:** `chore: phase 4 verified video calibration checkpoint`.
-**Status:** The 48 reviewed files are staged after exact index verification; the local commit is awaiting founder approval. No new local commit or push is authorized yet. The founder must approve the staged set before committing and approve again before pushing to the existing remote.
+**Publication outcome:** The founder separately approved the 48-file local commit and its normal fast-forward push. Checkpoint `143831395429785a2a5647b7317aafc0fe4fdea7` (`chore: phase 4 verified video calibration checkpoint`) is on local/GitHub `main`; remote publication and the clean working tree were verified at completion. The requested message, manifest, tests and approval gates below preserve the original preparation record. Later Phase 5 work is not part of this commit and has no commit/push authorization.
 
 ## What this checkpoint saves
 

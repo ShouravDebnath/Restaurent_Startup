@@ -74,6 +74,9 @@ coverage/
 *.webm
 *.onnx
 *.pt
+*.pth
+*.safetensors
+*.onnx.data
 
 # Machine/editor files.
 .DS_Store

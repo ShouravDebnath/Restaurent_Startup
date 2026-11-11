@@ -7,10 +7,13 @@ anyio==4.16.0
 argon2-cffi==25.1.0
 argon2-cffi-bindings==26.1.0
 cffi==2.1.1
+cryptography==50.0.2
 click==8.5.1
 fastapi==0.162.1
 h11==0.16.0
 httptools==0.9.0
+http-message-signatures==3.0.0
+http-sf==1.5.0
 idna==3.20
 Mako==1.4.3
 MarkupSafe==3.0.4

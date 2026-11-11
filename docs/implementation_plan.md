@@ -1,9 +1,9 @@
 # Implementation Plan
 
-**Status:** Phases 0–4 implemented locally; Phase 4 checkpoint `143831395429785a2a5647b7317aafc0fe4fdea7` is saved on local/GitHub `main` after separate approvals. Phase 5 now runs the separately approved RF-DETR Nano CPU model with verified synthetic video/shadow integration and 445 passing tests. Representative positive-person/restaurant evaluation remains pending; YOLOX stays held. Stop for founder review; no Phase 6, commit or push.
+**Status:** Phases 0-5 are preserved; Phase 6 was reverified on 2026-11-11: 529 passing tests, six browser groups, actual TLS/outage/restart recovery. Both additive migrations are applied. The initial native loading failure remains documented; real-person/restaurant accuracy and deployment security remain gated. No Phase 7, commit, push or public deployment is authorized.
 **Rule:** Complete and verify one phase before beginning the next.
 
-The [Phase 5 checkpoint review](PHASE_05_CHECKPOINT.md) records the later manual synthetic test, fresh 445-test pass, retained intermittent MP4 timing failure and exact proposed Git files. It preserves the current private data and requires separate local-commit and push approvals. These checks do not validate real-person or restaurant accuracy.
+The [Phase 5 checkpoint review](PHASE_05_CHECKPOINT.md) preserves manual synthetic evidence, the fresh 445-test pass, initial intermittent timing failure and reviewed files. Its later publication outcome records separate commit/push approvals and matching GitHub/local hashes. The [approved Phase 6 plan](PHASE_06_IMPLEMENTATION_PLAN.md) preserves the design; [the Phase 6 explanation](phase_explanations/PHASE_06.md) records its implementation and subsequent verification. Delivery tests do not validate real-person or restaurant accuracy.
 
 Use [CODEX_HANDOFF.md](CODEX_HANDOFF.md) for the startup handoff and historical inspection, [PHASE_02.md](phase_explanations/PHASE_02.md) for current implementation/evidence, and the earlier [Phase 1 environment report](phase_explanations/PHASE_01.md#pre-phase-2-environment-and-repository-check-2026-11-07) as a historical maintenance record. Only phases explicitly marked implemented below are completed; later milestones remain planned.
 
@@ -66,9 +66,17 @@ Add a replaceable, license-reviewed detector; person-to-zone association; confid
 
 ## Phase 6: edge synchronization
 
+**Implemented 2026-11-08; reverified 2026-11-11:** [PHASE_06.md](phase_explanations/PHASE_06.md)
+records 529 passing tests, six browser groups, actual HTTPS/outage/restart recovery,
+duplicate-safe synthetic tasks, separately approved additive migrations and data
+preservation. AI stays shadow-only; Phase 7 and deployment gates remain closed.
+The dated proposal paragraph below is historical.
+
 Implement SQLite outbox, authenticated batches, device pairing, retries/backoff, restart replay, heartbeat, idempotency, revocation, and device-offline UI.
 
 **Exit:** Outages and restarts preserve events, duplicate sends have one effect, and revoked devices are rejected.
+
+**Planning only — 2026-11-08:** [The complete Phase 6 proposal](PHASE_06_IMPLEMENTATION_PLAN.md) covers one-location fingerprint pairing, separate device credentials, signed HTTPS batches, a durable SQLite outbox, ordering/retries/recovery, finite offline processing permission, health and scoped SSE/dashboard integration. AI output remains shadow by default; a restricted synthetic fixture tests actual task uniqueness without live AI activation. The proposal records installed SQLite WAL precautions and unresolved Phase 5 pacing/accuracy gates. No application change, dependency installation, migration, commit or push is authorized by planning.
 
 ## Phase 7: workflow and analytics
 
@@ -121,9 +129,9 @@ Only after Phase 9 and approval: add billing behind a feature flag, onboarding, 
 - Phase 2 migrations, restricted runtime database access, rebuilt API/web images, and the running frontend/database path are now verified locally. A clean-machine installation and public production deployment are not verified. The original volume and database container were preserved, with a private backup restored in an isolated test database.
 - The project `.venv` includes approved Argon2 dependencies. The Phase 3 suite passes 262 tests, including all 152 earlier cases and the four original starter tests. The API image now constrains its original runtime versions; host/edge versions are not fully locked; the Starlette test stack emits an HTTPX deprecation warning. Host Python 3.14/Node 26 differ from Docker/CI Python 3.12/Node 22.
 - npm audit still reports 8 affected packages (1 high, 7 moderate); no npm upgrades or overrides were applied. Explicit frontend tracing configuration removes the duplicate-lockfile warning. Deprecated `next lint` remains for later reviewed migration.
-- Git checkpoints `6808a81` and `62ad229` remain ancestors of `3342c42` (`V1`), which saves Phase 3. After separate founder commit/push approvals, verification checkpoint `899f74368b9487ae1c33e0d0c0e511e37b396f36` was published, followed by Phase 4 checkpoint `143831395429785a2a5647b7317aafc0fe4fdea7` on local/GitHub `main`. The [Phase 3 manifest](PHASE_03_CHECKPOINT.md) and [Phase 4 manifest](PHASE_04_CHECKPOINT.md) preserve their preparation records and approval boundaries. The later Phase 5 planning task creates documentation only and does not commit or push it. Hosted CI results were not checked.
+- Git checkpoints `6808a81`, `62ad229`, `3342c42`, `899f743` and `1438313` are preserved in history. The later Phase 5 checkpoint `ae19ec81f342d17730ddd48845a5862a2d56a99a` was committed/pushed after separate approvals, with matching remote hash verified. Phase manifests preserve preparation history. This Phase 6 planning task does not commit/push anything, and hosted CI results were not checked.
 - Compose now applies restricted runtime credentials and database-backed readiness; the API enforces `APP_ENV`, cookie/origin requirements, and `DEMO_MODE`. Administrative secrets stay outside API runtime. Private values/backups remain ignored, and `.dockerignore` protects build contexts. Production secret storage, non-root images, TLS, admin MFA/recovery, and external review remain open.
 - The preserved legacy database administrator password is weak. The approved plan forbids rotating it in this phase; obtain approval for a reviewed rotation before public/pilot use. Runtime/demo credentials are separately generated and private.
-- Identity/session, grants/RLS, safe tests and the Phase 3 synthetic event/task/SSE workflow are implemented. Synthetic video/calibration are verified in Phase 4. Phase 5 has real approved RF-DETR inference through the local shadow pipeline; representative person/restaurant evaluation remains pending. Physical hardware/codecs, customer footage consent, deployment metrics and external services remain unverified. Phases 6–10 are not implemented.
+- Identity/session, grants/RLS, safe tests and the Phase 3 synthetic event/task/SSE workflow are implemented. Synthetic video/calibration are verified in Phase 4. Phase 5 has real approved RF-DETR inference through the local shadow pipeline; representative person/restaurant evaluation remains pending. Physical hardware/codecs, customer footage consent, deployment metrics and external services remain unverified. Phase 6 local/synthetic transport is verified; Phases 7-10 are not implemented.
 
-See [PHASE_05.md](phase_explanations/PHASE_05.md) for current inference commands/results and [PHASE_04.md](phase_explanations/PHASE_04.md) for calibration/hardware limits. Earlier phase results remain dated history. Stop for founder review; no Phase 6 is approved.
+See [PHASE_05.md](phase_explanations/PHASE_05.md) for current inference commands/results and [PHASE_04.md](phase_explanations/PHASE_04.md) for calibration/hardware limits. Earlier phase results remain dated history. See PHASE_06.md for the current approved Phase 6 scope and verification; stop for review after this phase.

@@ -1,0 +1,4 @@
+# Reviewed Phase 6 Linux x86_64/Python 3.12 additions; installation needs approval.
+cryptography==50.0.2 --hash=sha256:9dab55f57c74c3cad24c323bacbbd04be4705ba6eb0d92e920b1fc4837ed5079
+http-message-signatures==3.0.0 --hash=sha256:c289966e1b2950517cd57aed166be5e981de96f0cd29f69173f09ac547a8552a
+http-sf==1.5.0 --hash=sha256:031282bd376549b04fcaa397d9ef351acdc5bd383435cccd1d8ea17b1661c80e

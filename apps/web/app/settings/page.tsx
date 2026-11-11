@@ -6,6 +6,7 @@ import { FormEvent, useCallback, useEffect, useState } from "react";
 import { CameraForm, MemberForm, TableForm, ZoneForm } from "./forms";
 import type { Audit, Camera, Me, Member, Role, Table, Zone } from "./types";
 import { PreviewPermissions } from "./preview-permissions";
+import { DevicePermissions } from "./device-permissions";
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -195,6 +196,8 @@ export default function SettingsPage() {
           <ZoneForm key={locationId + tables.length + cameras.length} path={`/v1/locations/${locationId}/table-zones`} save={save} disabled={disabled} tables={tables} cameras={cameras} />
         </details>}
       </section>
+      <DevicePermissions key={locationId + revision} locationId={locationId} canManage={manager} save={save}
+        disabled={disabled} cameras={cameras} tables={tables} zones={zones}/>
       {installer && <PreviewPermissions key={locationId} locationId={locationId} cameras={cameras}
         userId={me.id} canGrant={manager} save={save} disabled={disabled} />}
     </>}

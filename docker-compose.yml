@@ -28,6 +28,7 @@ services:
       COOKIE_SECURE: ${COOKIE_SECURE:-false}
       ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:3000,http://127.0.0.1:3000}
       DEMO_MODE: ${DEMO_MODE:-true}
+      EDGE_SYNC_ENABLED: ${EDGE_SYNC_ENABLED:-false}
     ports:
       - "127.0.0.1:${API_PORT:-8000}:8000"
     depends_on:

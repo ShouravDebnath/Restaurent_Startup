@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     session_absolute_seconds: int = Field(default=28800, ge=1, le=28800)
     cookie_secure: bool = False
     demo_mode: bool = True
+    edge_sync_enabled: bool = False
 
     @model_validator(mode="after")
     def require_secure_deployment(self):

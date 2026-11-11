@@ -89,6 +89,14 @@ def provision_runtime(engine, username: str, password: str) -> None:
                 "public.staff_tasks,public.action_receipts TO {}"
             ),
             "GRANT SELECT ON public.table_zone_revisions,public.camera_preview_grants TO {}",
+            (
+                "GRANT SELECT ON public.edge_devices,public.edge_keys,public.edge_assignments,"
+                "public.edge_bindings,public.edge_receipts,public.edge_shadows,public.edge_health,"
+                "public.edge_audits,public.location_notifications TO {}"
+            ),
+            # Internal helpers are invoked only by other SECURITY DEFINER functions.
+            "REVOKE EXECUTE ON FUNCTION security.edge_publish(uuid,text) FROM {}",
+            "REVOKE EXECUTE ON FUNCTION security.edge_fixture(uuid,jsonb,boolean) FROM {}",
         ]
         for statement in statements:
             cursor.execute(sql.SQL(statement).format(sql.Identifier(username)))

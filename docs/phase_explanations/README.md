@@ -1,5 +1,11 @@
 # Phase Explanations
 
+**Phase 6 checkpoint preparation - 2026-11-11:** [The complete reviewed manifest](../PHASE_06_CHECKPOINT.md#complete-reviewed-file-list) lists 68 safe source/configuration/test/documentation files. The completed 529-test and six-browser-group results are retained; checkpoint preparation does not rerun those tests. Local commit and push each require separate founder approval. Private assets remain excluded; no Phase 7.
+
+**Current Phase 6 verification - 2026-11-11:** [PHASE_06.md](PHASE_06.md#resumed-final-verification---2026-11-11) records **529 passing tests**, six browser groups, a fresh actual outage/restart check, preserved data, the blueprint event-route correction and retained initial loading failure. AI remains shadow-only; real-person accuracy and deployment gates remain unresolved. No Phase 7, commit or push.
+
+**Latest publication and Phase 6 planning — 2026-11-08:** The founder separately approved Phase 5 commit/push; local/GitHub `main` were verified at `ae19ec81f342d17730ddd48845a5862a2d56a99a` with a clean tree. [The next-phase plan](../PHASE_06_IMPLEMENTATION_PLAN.md) is documentation only and retains the accuracy/timing limitations. No new application checks were run for planning. Earlier pending-approval records below are historical.
+
 This folder explains each completed development phase in beginner-friendly English. The explanations record what was actually built, how to run it on Windows 11, what tests really passed, and what remains unverified.
 
 Start with the [Codex project handoff](../CODEX_HANDOFF.md) for the complete project understanding, dated independent verification, known risks, roadmap, and Phase 2 requirements. The documentation handoff is not a new numbered development phase. Earlier test reports are retained as historical records; current limitations are identified separately.
@@ -11,7 +17,8 @@ Start with the [Codex project handoff](../CODEX_HANDOFF.md) for the complete pro
 | 02 | [PHASE_02.md](PHASE_02.md) | Implemented/verified; saved in local checkpoint `62ad229`; original 152 tests retained in Phase 3 |
 | 03 | [PHASE_03.md](PHASE_03.md) | Fresh verification: 262 tests, 10 dashboard-browser groups, 4 restart groups; existing `3342c42` confirmed on GitHub; retained by Phase 4 regression |
 | 04 | [PHASE_04.md](PHASE_04.md) | Local synthetic video/calibration verified: 333 tests, nine browser groups; checkpoint `1438313` published after separate approvals; physical cameras unverified |
-| 05 | [PHASE_05.md](PHASE_05.md) | Real RF-DETR CPU/synthetic workflow implemented: 445 tests, six real-model browser groups plus seven prior groups; representative person/restaurant evaluation pending |
+| 05 | [PHASE_05.md](PHASE_05.md) | Published synthetic checkpoint `ae19ec8`; original 445 tests retained in Phase 6. MP4 pacing fixed in Phase 6; real-person/restaurant accuracy unverified |
+| 06 | [PHASE_06.md](PHASE_06.md) | Local/synthetic transport reverified 2026-11-11: 529 tests, six browser groups, outage/restart/deduplication; approved additive migrations applied; real-world AI and deployment gates remain |
 
 **Phase 5 checkpoint review — 2026-11-08:** [The complete checkpoint manifest](../PHASE_05_CHECKPOINT.md) records founder-reported synthetic verification, seating Revision 1, preserved calibration Revision 7, a fresh **445-test pass** and frontend/static checks. The initial 444-pass/one-failure MP4 timing run remains documented; independent reruns pass and a separate diagnostic explains the remaining timing sensitivity without weakening tests. The current 429 business records, ten users and private seating data are preserved. Real-person/restaurant accuracy is unverified; Phase 5 is not fully validated. Local commit and push require separate approvals.
 

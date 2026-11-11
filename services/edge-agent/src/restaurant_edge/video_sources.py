@@ -31,14 +31,17 @@ class VideoSource(ABC):
 
 
 class OpenCVSource(VideoSource):
-    def __init__(self, definition):
+    def __init__(self, definition, *, clock=None, sleep=None):
         self.definition = definition
+        self.clock = clock or time.monotonic
+        self.sleep = sleep or time.sleep
         self.capture = None
         self.sequence = 0
         self.started = 0.0
         self.fps = 0.0
         self.frames = 0
         self.gateway = None
+        self.last_delivery = None
 
     def open(self):
         import cv2
@@ -64,7 +67,9 @@ class OpenCVSource(VideoSource):
             raise SourceFailure("UNSUPPORTED_DIMENSIONS")
         self.fps = cap.get(cv2.CAP_PROP_FPS)
         self.frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-        self.started = time.monotonic()
+        self.sequence = 0
+        self.last_delivery = None
+        self.started = self.clock()
 
     def read(self):
         import cv2
@@ -82,10 +87,15 @@ class OpenCVSource(VideoSource):
             if self.fps <= 0 or self.fps > 240:
                 raise SourceFailure("UNSUPPORTED_FRAME_RATE")
             media = (self.sequence - 1) / self.fps if media <= 0 else media
-            delay = self.started + media - time.monotonic()
-            if delay > 0:
-                time.sleep(min(delay, 1.0))
-        return Frame(image, self.sequence, datetime.now(UTC), time.monotonic(), media if media >= 0 else None)
+            # Replay never compresses the next gap to catch up after a delayed
+            # first decode/read. Live-camera sampling still drops old frames.
+            if self.last_delivery is not None:
+                deadline = self.last_delivery + 1 / self.fps
+                while (delay := deadline - self.clock()) > 0:
+                    self.sleep(min(delay, 1.0))
+        delivered = self.clock()
+        self.last_delivery = delivered
+        return Frame(image, self.sequence, datetime.now(UTC), delivered, media if media >= 0 else None)
 
     def close(self):
         if self.capture is not None:

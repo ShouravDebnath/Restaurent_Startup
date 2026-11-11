@@ -1,6 +1,13 @@
 # Phase 5: local pretrained person detector and shadow occupancy
 
+> **Phase 6 resumed verification - 2026-11-11:** The final 529-test suite retains all 445 original cases and the unchanged timing assertions. A first resumed run had 525 passes and one native model-loading failure; the focused and final runs passed without timeout/assertion changes. Prompt device-health publication was corrected after a browser failure and a deterministic regression. Native startup sensitivity remains a limitation; representative real-person/restaurant accuracy remains unverified. See [the fresh Phase 6 evidence](PHASE_06.md#resumed-final-verification---2026-11-11).
+
+> **Phase 6 follow-up - 2026-11-08:** The delayed-first-frame MP4 pacing mismatch is fixed in `video_sources.py`, with the original assertions retained and added delay/reopen regressions. The final sequential Phase 6 regression passed 526 tests, including the original 445. [PHASE_06.md](PHASE_06.md) records this fix, later verification and all new/historical failures. The initial Phase 5 444-pass/one-failure run below remains historical evidence. Person/table-assignment/restaurant accuracy remains unverified; only synthetic footage is authorized.
+
 **Date:** 2026-11-08, Asia/Dhaka; evidence timestamps use UTC.
+
+> **Latest publication/planning update — 2026-11-08:** After separate founder commit and push approvals, the 53-file synthetic checkpoint was saved as `ae19ec81f342d17730ddd48845a5862a2d56a99a` on local/GitHub `main`; an independent remote lookup verified the matching hash, and Git was clean. Private files stayed excluded and no files were deleted. The 445-test pass and original intermittent MP4 timing failure below remain dated evidence, not new planning checks. Real-person/restaurant accuracy remains unverified. [The Phase 6 proposal](../PHASE_06_IMPLEMENTATION_PLAN.md) is documentation only and awaits implementation approval. Earlier “not committed/pushed” statements retain their original preparation context.
+
 **Current status:** the real RF-DETR Nano CPU adapter, approved local checkpoint/export and synthetic-video integration are implemented. The founder separately approved the official checkpoint download and the exact 65-package isolated export environment. **Representative person-footage evaluation remains pending**, so Phase 5 is not certified for restaurant use. Only synthetic footage is approved; `SR.mp4` and other recordings remain unopened. The earlier YOLOX hold remains in force. See the [acquisition/export review and follow-up](../PHASE_05_RFDETR_REVIEW.md) for licensing, hashes, actual checks and the approval history.
 
 The [approved proposal](../PHASE_05_IMPLEMENTATION_PLAN.md) remains the scope authority; the [original dependency review](../PHASE_05_DEPENDENCY_REVIEW.md) preserves the initial runtime approval and YOLOX hold. Real inference is now verified on generated inputs, with no positive person or restaurant accuracy claim. Do not start Phase 6 or deploy from this record. The founder requested the [Phase 5 checkpoint review](../PHASE_05_CHECKPOINT.md); committing and pushing each require separate explicit approval. Earlier dated implementation/review sections are preserved as history.
@@ -71,8 +78,8 @@ flowchart LR
 
 1. The user signs in to the same loopback companion. Their role/location and current explicit camera grant are checked. Phase 5 currently rejects non-synthetic sources.
 2. The existing decoder continues to produce preview JPEGs. Original BGR samples are copied only while analysis is enabled, using a one-item mailbox; old pending samples are dropped.
-3. Explicit analysis startup requires a saved scoped profile and an approved model catalog entry. **On this machine the catalog is empty, so startup returns 503 before loading a model or enabling raw handoff.** The UI disables its detector button.
-4. After a future approved artifact is available, the separate worker would perform inference. Startup has a 15-second bound; an outstanding inference has a five-second watchdog. Source health and analysis health remain separate.
+3. Explicit analysis startup requires a saved scoped profile and an approved model catalog entry. A missing/unapproved catalog returns 503 before loading a model or enabling raw handoff. The initial pre-acquisition catalog was empty; the later approved RF-DETR catalog is provisioned as described in the real-model workflow below. YOLOX acquisition remains held.
+4. With the approved RF-DETR artifact selected, the separate worker performs inference. Startup has a 15-second bound; an outstanding inference has a five-second watchdog. Source health and analysis health remain separate.
 5. Results must match the outstanding frame/generation and original dimensions, and satisfy freshness. Source/model failure clears stale boxes. Normal file completion releases the inference worker.
 6. Scope/calibration and current manual states are refreshed through GET metadata requests. More than three seconds without a fresh manual snapshot makes observations unverified; four seconds ends analysis. Background reads do not renew human idle expiry or block the permission watchdog's serialization lock.
 7. Matching boxes become table observations, then time-filtered shadow transitions. Only minimal bounded events stay in memory, marked `source=ai_local_shadow` and `authoritative=false`, with organization/location/camera/table identity, model/config fingerprints, zone revision, source generation/sequence and available media position. Images/boxes are not sent to the cloud.
@@ -148,7 +155,9 @@ Edge paths below are under `services/edge-agent/`.
 
 Abbreviated `...` paths continue `src/restaurant_edge/`. Private reports, test clips/screenshots, configuration revisions and logs remain ignored under `.secrets/` or `.cache/`.
 
-## Windows 11: run the current lab
+## Windows 11: initial lab snapshot before model acquisition
+
+This subsection preserves the pre-acquisition walkthrough. Use **Windows 11: run the actual local detector** below for the current RF-DETR command and model-enabled behavior.
 
 Run from `E:\Restaurent_startup`, using the existing `.venv` and retained containers. No model download is part of these commands.
 
@@ -164,7 +173,7 @@ Open `http://127.0.0.1:8765/analysis`. If the old companion already uses that po
 3. Select the matching synthetic lab/camera/table and start synthetic preview. A missing grant, unconfigured alias or wrong location fails safely.
 4. Pause the frame, review/draw the separate seating boundary and optionally an exclusion. Use numeric X/Y controls if easier than the pointer.
 5. A manager saves the initial local seating profile. Reload/refresh, restart preview and reload the profile to verify persistence. This is separate from cloud polygon Revision 7.
-6. The detector button remains disabled because weights are held. A direct analysis-start request also returns 503. **There is currently no working pretrained-person demonstration to show.** Do not create an invented approval manifest to bypass the hold.
+6. At this original pre-acquisition step the detector button was disabled because weights were held, and direct startup returned 503. There was no working pretrained demonstration at that time. The later separately approved RF-DETR workflow below supersedes that limitation; do not create an invented approval manifest to bypass any remaining hold.
 
 After licensing is resolved, the founder must approve the exact acquisition and artifact verification before a genuine model manifest is provisioned. The adapter's real graph/positive and negative inference tests, performance benchmark and evaluation then remain required; a successful import alone is insufficient.
 

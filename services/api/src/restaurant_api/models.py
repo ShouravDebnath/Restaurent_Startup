@@ -1,4 +1,4 @@
-"""Tenant configuration and Phase 3 operational persistence; no video/device ingestion."""
+"""Tenant configuration and operational persistence; raw video is never stored here."""
 
 from datetime import datetime
 from typing import ClassVar

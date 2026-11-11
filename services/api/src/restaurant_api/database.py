@@ -39,4 +39,5 @@ def get_db() -> Generator[Session, None, None]:
 
 
 def set_identity(db: Session, user_id: str) -> None:
+    db.execute(text("SELECT set_config('app.edge_device_id','',true),set_config('app.edge_key_id','',true)"))
     db.execute(text("SELECT set_config('app.user_id', :user_id, true)"), {"user_id": user_id})

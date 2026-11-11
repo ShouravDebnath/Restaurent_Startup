@@ -180,10 +180,19 @@ def event_batch(token: str, location_id: UUID, position: int):
         _, _, ops = operation_scope(db, identity, location_id)
         if position > ops.revision:
             raise HTTPException(409, "Reload the dashboard.")
-        events = db.scalars(select(TableEvent).where(
-            TableEvent.location_id == location_id, TableEvent.revision > position
-        ).order_by(TableEvent.revision).limit(100)).all()
-        return [s.EventOut.model_validate(row).model_dump(mode="json") for row in events]
+        # Both kinds share the location counter; one ordered query avoids cursor gaps.
+        events = db.execute(text('''
+            SELECT revision,data FROM (
+                SELECT e.revision,to_jsonb(e) AS data FROM public.table_events e
+                WHERE e.location_id=:loc AND e.revision>:position
+                UNION ALL
+                SELECT n.revision,jsonb_build_object('revision',n.revision,'event_type','edge.'||n.kind,
+                    'device_id',n.device_id,'location_id',n.location_id) AS data
+                FROM public.location_notifications n WHERE n.location_id=:loc AND n.revision>:position
+            ) ordered_events ORDER BY revision LIMIT 100
+            '''), {'loc': location_id, 'position': position}).mappings().all()
+        return [row['data'] if row['data']['event_type'].startswith('edge.') else
+                s.EventOut.model_validate(row['data']).model_dump(mode='json') for row in events]
 
 
 def stream_frames(token: str, location_id: UUID, position: int, user_id: UUID,

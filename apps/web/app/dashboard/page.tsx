@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { Activity, Dashboard, Me, State, Table, elapsed, labels, symbols } from "./types";
+import { EdgeHealthPanel } from "./edge-health";
 
 type Pending = { path: string; body: object; generation: number };
 
@@ -236,6 +237,7 @@ export default function DashboardPage() {
     {locationId && !view && <p role="status">Loading your dining room…</p>}
     {view && <>
       {(view.tables_truncated || view.tasks_truncated) && <p role="alert" className="offline-banner">This overview has reached its display limit. Some tables or tasks are not shown. Ask an administrator to review the full location records.</p>}
+      <EdgeHealthPanel key={locationId} locationId={locationId} cursor={view.cursor} timeZone={view.location.time_zone}/>
       <section className="floor-summary" aria-label="Table summary">
         <div><strong>{view.tables.length}</strong><span>Tables shown</span></div>
         {(["AVAILABLE", "OCCUPIED", "RESET_PENDING", "CLEANING", "UNKNOWN", "OUT_OF_SERVICE"] as State[]).map((state) =>

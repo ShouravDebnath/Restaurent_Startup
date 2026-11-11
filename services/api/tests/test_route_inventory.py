@@ -16,7 +16,7 @@ def test_every_resource_route_has_negative_security_coverage(suite):
         ("GET", "/v1/organizations"),
         ("POST", "/v1/organizations"),
     }
-    public = {("POST", "/v1/auth/session"), ("GET", "/v1/demo/tenant")}
+    public = {("POST", "/v1/auth/session"), ("GET", "/v1/demo/tenant"), ("POST", "/v1/edge/pairings")}
     # Every Phase 3 route below is exercised anonymously and in both tenant directions
     # by test_dashboard.py::test_dashboard_routes_reject_foreign_and_anonymous_access.
     covered |= {
@@ -41,5 +41,11 @@ def test_every_resource_route_has_negative_security_coverage(suite):
         ("POST", "/v1/locations/{id}/cameras/{id}/preview-grants/{id}/revoke"),
         ("GET", "/v1/locations/{id}/cameras/{id}/preview-authorization"),
         ("GET", "/v1/locations/{id}/table-zones/{id}/revisions"),
+    }
+    # HTTPS/no-signature and both-tenant/anonymous cases: test_edge_transport.py.
+    covered |= {
+        ('POST', '/v1/edge/pairings/proof'), ('POST', '/v1/edge/batches'), ('POST', '/v1/edge/events'),
+        ('POST', '/v1/edge/heartbeat'),
+        ('GET', '/v1/locations/{id}/devices'), ('POST', '/v1/locations/{id}/devices/commands'),
     }
     assert actual == covered | public

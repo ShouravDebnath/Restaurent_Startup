@@ -1,3 +1,5 @@
+import asyncio
+from contextlib import asynccontextmanager, suppress
 from datetime import UTC, datetime
 from typing import Literal
 from uuid import uuid4
@@ -10,6 +12,7 @@ from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 from restaurant_api.calibration import router as calibration_router
+from restaurant_api.edge_routes import router as edge_router
 from restaurant_api.routes import router
 from restaurant_api.security import Db
 from restaurant_api.settings import get_settings
@@ -41,10 +44,25 @@ class DemoTenantResponse(BaseModel):
 
 
 def create_app() -> FastAPI:
-    app = FastAPI(title="Restaurant AI Monitoring API", version="0.2.0")
+    @asynccontextmanager
+    async def lifespan(_):
+        task = None
+        if get_settings().edge_sync_enabled:
+            from restaurant_api.edge_monitor import monitor
+            task = asyncio.create_task(monitor())
+        try:
+            yield
+        finally:
+            if task:
+                task.cancel()
+                with suppress(asyncio.CancelledError):
+                    await task
+
+    app = FastAPI(title="Restaurant AI Monitoring API", version="0.2.0", lifespan=lifespan)
     app.include_router(router)
     app.include_router(workflow_router)
     app.include_router(calibration_router)
+    app.include_router(edge_router)
 
     def error_response(request, status, message):
         codes = {
@@ -139,6 +157,10 @@ def create_app() -> FastAPI:
             "name": get_settings().cookie_name,
             "description": "HttpOnly session cookie; writes also require Origin and X-CSRF-Token.",
         }
+        schema["components"]["securitySchemes"]["DeviceSignature"] = {
+            "type": "apiKey", "in": "header", "name": "Signature",
+            "description": "RFC 9421 Ed25519 over verified HTTPS, with digest, nonce and expiry.",
+        }
         for path, operations in schema["paths"].items():
             for method, operation in operations.items():
                 if (
@@ -147,7 +169,11 @@ def create_app() -> FastAPI:
                     and not (path == "/v1/auth/session" and method == "post")
                     and method in {"get", "post", "patch", "put", "delete"}
                 ):
-                    operation["security"] = [{"SessionCookie": []}]
+                    if path.startswith('/v1/edge/'):
+                        if path != '/v1/edge/pairings':
+                            operation["security"] = [{"DeviceSignature": []}]
+                    else:
+                        operation["security"] = [{"SessionCookie": []}]
         return schema
 
     app.openapi = openapi_with_session_security

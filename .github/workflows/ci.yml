@@ -29,7 +29,9 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: python -m pip install -e ".[dev]"
+      # Phase 6 HTTPS/queue integration tests exercise both project packages.
+      # Private model weights remain local; CI does not download them.
+      - run: python -m pip install -e ".[dev]" -e "../edge-agent[dev]"
       - run: python -m ruff check .
       - run: python -m pytest
 

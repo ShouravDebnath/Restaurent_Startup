@@ -5,7 +5,7 @@ type Context = { params: Promise<{ path: string[] }> };
 
 async function proxy(request: NextRequest, context: Context) {
   const { path } = await context.params;
-  if (path[0] !== "v1" || path.some((part) => part === "." || part === "..")) {
+  if (path[0] !== "v1" || path[1] === "edge" || path.some((part) => part === "." || part === "..")) {
     return NextResponse.json({ error: { message: "Resource not found." } }, { status: 404 });
   }
   const upstream = new URL(

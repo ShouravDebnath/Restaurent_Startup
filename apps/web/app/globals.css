@@ -140,3 +140,5 @@ button.state-unknown { background: #efefed; border-color: #999e96; }
   .activity-panel li { grid-template-columns: minmax(0, 1fr); gap: 6px; }
   .dashboard-header nav { justify-content: flex-start; }
 }
+/* Public key fingerprints must wrap on narrow mobile screens. */
+.device-fingerprint { overflow-wrap: anywhere; }

@@ -28,7 +28,7 @@ export function PreviewPermissions({locationId,cameras,userId,canGrant,save,disa
     });if(result){setMessage("Explicit preview permission saved. Video stays on the edge computer.");setRevision(v=>v+1);}
   }
   return <section className="config-card" aria-labelledby="preview-title"><h2 id="preview-title">Local preview permissions</h2>
-    <p>Use the authenticated local calibration tool on the edge computer. Frames and camera passwords stay local; camera health on this cloud page remains unconfigured until a later synchronization phase.</p>
+    <p>Use the authenticated local calibration tool on the edge computer. Frames and camera passwords stay local. Background device health appears separately on the dashboard; pairing a device never grants human preview permission.</p>
     <p>Start the local tool with the documented Windows command, then open <a href="http://127.0.0.1:8765" target="_blank" rel="noopener noreferrer">local camera setup on this PC</a>. This link makes no automatic connection.</p>
     {canGrant&&!!cameras.length&&<><label>Preview camera<select value={camera} onChange={e=>setCamera(e.target.value)}>{cameras.map(c=><option key={c.id} value={c.id}>{c.label}</option>)}</select></label>
       <form className="stack" onSubmit={grant}><label>Authorized viewer user ID<input name="viewer" required defaultValue={userId} pattern="[0-9a-fA-F-]{36}"/></label>

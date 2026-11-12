@@ -146,7 +146,7 @@ def test_migrations_preserve_preexisting_data_and_seed_is_repeatable(suite, tmp_
                 connection.scalar(text("SELECT value FROM preservation_sentinel WHERE id=1"))
                 == "keep this synthetic row"
             )
-            assert connection.scalar(text("SELECT version_num FROM alembic_version")) == "0008"
+            assert connection.scalar(text("SELECT version_num FROM alembic_version")) == "0009"
             assert connection.scalar(text("SELECT count(*) FROM organizations")) == 2
     finally:
         engine.dispose()

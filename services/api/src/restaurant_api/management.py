@@ -97,6 +97,19 @@ def provision_runtime(engine, username: str, password: str) -> None:
             # Internal helpers are invoked only by other SECURITY DEFINER functions.
             "REVOKE EXECUTE ON FUNCTION security.edge_publish(uuid,text) FROM {}",
             "REVOKE EXECUTE ON FUNCTION security.edge_fixture(uuid,jsonb,boolean) FROM {}",
+            (
+                "GRANT SELECT ON public.workflow_policies,public.workflow_sessions,public.workflow_evidence,"
+                "public.workflow_suggestions,public.workflow_task_attempts,public.workflow_decisions,"
+                "public.workflow_policy_history,public.workflow_journal,public.workflow_quality_boundaries TO {}"
+            ),
+            "REVOKE EXECUTE ON FUNCTION security.workflow_legacy_action(uuid,text,integer,uuid,text,uuid,boolean,text,boolean,boolean) FROM {}",
+            "REVOKE EXECUTE ON FUNCTION security.workflow_event(uuid,text,text,jsonb) FROM {}",
+            "REVOKE EXECUTE ON FUNCTION security.workflow_receive() FROM {}",
+            "REVOKE EXECUTE ON FUNCTION security.workflow_task_projection() FROM {}",
+            "REVOKE EXECUTE ON FUNCTION security.workflow_journal_capture() FROM {}",
+            "REVOKE EXECUTE ON FUNCTION security.workflow_quality(jsonb,jsonb) FROM {}",
+            "REVOKE EXECUTE ON FUNCTION security.workflow_rules_digest(jsonb) FROM {}",
+            "REVOKE EXECUTE ON FUNCTION security.workflow_quality_boundary() FROM {}",
         ]
         for statement in statements:
             cursor.execute(sql.SQL(statement).format(sql.Identifier(username)))

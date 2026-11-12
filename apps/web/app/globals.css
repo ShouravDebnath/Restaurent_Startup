@@ -53,6 +53,27 @@ button:hover { filter: brightness(0.9); }
 button:disabled { cursor: wait; opacity: 0.5; }
 .secondary { background: transparent; color: var(--leaf); }
 :focus-visible { outline: 3px solid #b67523; outline-offset: 3px; }
+.review-list { display:grid; gap:1rem; grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr)); }
+.review-card { border:1px solid var(--line); border-radius:8px; padding:1rem; background:#fffdf7; min-width:0; }
+.review-card h3 { margin:0 0 .7rem; }
+.review-actions { display:flex; flex-wrap:wrap; align-items:flex-end; gap:.7rem; margin-top:.8rem; }
+.review-panel input[type=checkbox] { flex-shrink:0; }
+.review-panel fieldset { margin:1rem 0; }
+.report-summary { display:grid; gap:1rem; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); }
+.analytics-workspace .inline-form { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr)); align-items:flex-end; }
+.analytics-workspace .inline-form > label { width:100%; }
+.analytics-workspace .inline-form input,.analytics-workspace .inline-form select { width:100%; min-width:0; }
+.report-summary article { border:1px solid var(--line); border-radius:8px; padding:1rem; }
+.report-summary strong { display:block; font-size:1.5rem; }
+.report-scroll { max-width:100%; overflow:auto; }
+.report-table { width:100%; border-collapse:collapse; font: .85rem/1.5 Arial,sans-serif; }
+.report-table th,.report-table td { text-align:left; vertical-align:top; padding:.6rem; border-bottom:1px solid var(--line); }
+.report-bars { display:grid; gap:.6rem; padding:1rem 0; }
+.report-bar { display:grid; grid-template-columns:minmax(140px,1fr) 2fr; gap:.7rem; font: .85rem/1.4 Arial,sans-serif; }
+.report-bar>div { background:#eaece5; border-radius:4px; overflow:hidden; min-height:1.2rem; }
+.report-bar>div>span { display:block; background:var(--leaf); height:100%; min-height:1.2rem; }
+.report-pagination { display:flex; gap:1rem; align-items:center; flex-wrap:wrap; margin:1rem 0; }
+@media(max-width:500px) { .review-actions { align-items:stretch; flex-direction:column; } .report-bar { grid-template-columns:1fr; } }
 .hint { color: var(--muted); font: 0.85rem/1.5 Arial, sans-serif; }
 .error, .notice { border-radius: 6px; font: 1rem/1.5 Arial, sans-serif; padding: 0.8rem 1rem; }
 .error { background: #fce8e3; color: #812d23; }

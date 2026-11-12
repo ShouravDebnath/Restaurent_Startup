@@ -147,6 +147,8 @@ class DeviceRunner:
                             raise DeviceRevoked('Binding changed; restart after reviewing the local profile')
                         if not self.lease.renew(reply, device_id):
                             raise DeviceRevoked('Processing permission withdrawn')
+                        self.cloud = updated
+                        self.analysis.engine.configuration = updated
                         self.online = True
                     except DeviceRevoked:
                         self.lease.revoke()

@@ -1,5 +1,9 @@
 # Phase 6: secure, durable communication from the restaurant computer
 
+> **Phase 7 compatibility — 2026-11-12:** Approved [Phase 7](PHASE_07.md) extends the existing dashboard and signed transport with opt-in human-reviewed workflow, compatible v2 metadata and reports. It preserves the original DEMO/v1 contracts, manual precedence, session deadlines and synthetic-only AI limitations. Phase 7 verification passes 636 tests and ten browser groups; separately approved additive `0009` and matching local services are active. Original records, credentials and calibrations are preserved, and existing locations remain OFF. Earlier phase-specific test/status statements below are historical.
+
+**Publication and next planning step - 2026-11-11:** After separate founder approvals, the 68-file checkpoint was committed and pushed as `fd983c7a656ab36f031db2900ef15a3da1362cbe`; independent GitHub lookup matched local and tracking `main`, with a clean tree. Secrets were excluded and files/data preserved. The [Phase 7 proposal](../PHASE_07_IMPLEMENTATION_PLAN.md) is documentation only; the 529-test and six-browser-group results below are retained Phase 6 evidence, not newly run planning checks. Earlier pending commit/push wording is the pre-publication snapshot. No Phase 7 implementation or public/pilot activation is included.
+
 **Git checkpoint preparation - 2026-11-11:** [The 68-file checkpoint review](../PHASE_06_CHECKPOINT.md) records the exact candidate manifest, sensitive-file exclusions and previously completed verification below. This preparation changes documentation and the Git index only; commit and push require separate approvals. No application, dependency or database change is included in checkpoint preparation.
 
 The checkpoint's explicit strict staged whitespace review reports 119 cosmetic
@@ -11,8 +15,8 @@ preserved and these findings are disclosed in the checkpoint review.
 **Implemented:** 2026-11-08. **Reverified:** 2026-11-11. **Scope:** local development and synthetic video only.
 **Status:** Implemented and verified for local development and synthetic transport:
 **529 tests passed**, plus six real browser checks in the resumed verification. Both additive migrations were
-separately approved and applied. No commit, push, public
-deployment or Phase 7 is authorized. Final results below must be read with their
+separately approved and applied. The separately approved commit/push is recorded
+above; public deployment and Phase 7 implementation remain unauthorized. Final results below must be read with their
 stated scope; historical failures are retained.
 
 ## Overview and objectives

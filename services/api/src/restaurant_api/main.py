@@ -11,12 +11,14 @@ from pydantic import BaseModel
 from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
+from restaurant_api.analytics import router as analytics_router
 from restaurant_api.calibration import router as calibration_router
 from restaurant_api.edge_routes import router as edge_router
 from restaurant_api.routes import router
 from restaurant_api.security import Db
 from restaurant_api.settings import get_settings
 from restaurant_api.workflow import router as workflow_router
+from restaurant_api.workflow_review import router as review_router
 
 
 class HealthResponse(BaseModel):
@@ -63,6 +65,8 @@ def create_app() -> FastAPI:
     app.include_router(workflow_router)
     app.include_router(calibration_router)
     app.include_router(edge_router)
+    app.include_router(review_router)
+    app.include_router(analytics_router)
 
     def error_response(request, status, message):
         codes = {
@@ -91,7 +95,7 @@ def create_app() -> FastAPI:
         request.state.request_id = str(uuid4())
         response = await call_next(request)
         response.headers["X-Request-ID"] = request.state.request_id
-        response.headers["Cache-Control"] = "no-store"
+        response.headers["Cache-Control"] = "private, no-store" if response.headers.get("Content-Type", "").startswith("text/csv") else "no-store"
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["X-Frame-Options"] = "DENY"
         return response

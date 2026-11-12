@@ -118,6 +118,7 @@ class EdgeBinding(Identified, Created, Scoped, Base):
 class EdgeReceipt(Created, Scoped, Base):
     __tablename__ = 'edge_receipts'
     __table_args__ = (
+        UniqueConstraint('event_id', 'organization_id', 'location_id', name='receipt_scope'),
         ForeignKeyConstraint(['device_id', 'organization_id', 'location_id'],
                              ['edge_devices.id', 'edge_devices.organization_id', 'edge_devices.location_id']),
         UniqueConstraint('device_id', 'stream_id', 'sequence'),

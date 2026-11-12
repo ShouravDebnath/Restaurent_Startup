@@ -160,6 +160,7 @@ class Analysis:
                             occupied = [k for k, t in self.engine.tables.items() if t.session_id and not t.departure_emitted]
                             observations = associate(people, self.config, occupied)
                             self.engine.media_seconds = frame.get('media_seconds')
+                            self.engine.frame_age_seconds = now - frame['received_monotonic']
                             self.engine.step(observations, frame['received_monotonic'], frame['received_at'],
                                              frame['generation'], frame['sequence'])
                             self.latest, self.people = frame, message['people']

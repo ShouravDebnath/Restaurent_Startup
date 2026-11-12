@@ -14,6 +14,7 @@ from pathlib import Path
 from types import SimpleNamespace
 from uuid import uuid4
 
+import pytest
 from sqlalchemy import create_engine, text
 from sqlalchemy.engine import URL
 from sqlalchemy.exc import SQLAlchemyError
@@ -29,7 +30,8 @@ def docker(*args, **kwargs):
     return result.stdout.decode().strip()
 
 
-def test_postgres_restart_preserves_committed_receipts_and_unique_task(tmp_path):
+@pytest.mark.parametrize('reviewed', [False, True])
+def test_postgres_restart_preserves_committed_receipts_and_unique_task(tmp_path, reviewed):
     name = 'restaurant-phase6-recovery-'+uuid4().hex[:10]
     volume = name+'-data'
     database = 'phase2_security_test_phase6_recovery'
@@ -104,13 +106,23 @@ def test_postgres_restart_preserves_committed_receipts_and_unique_task(tmp_path)
         edge = SimpleNamespace(suite=suite,clients=clients,client=client,org=org,loc=loc,camera=resources['camera_id'],
             table=resources['table_id'],key=Ed25519PrivateKey.generate(),kid=uuid4(),request_id=uuid4(),stream=uuid4())
         try:
-            configure(edge,'SYNTHETIC_WORKFLOW_TEST')
-            episode = uuid4()
-            one = observation(edge,1).model_copy(update={'kind':'fixture_arrive','reason':'FIXTURE',
-                'state':'OCCUPIED','occupancy_session_id':episode})
-            two = observation(edge,2).model_copy(update={'kind':'fixture_depart','reason':'FIXTURE',
-                'state':'RESET_PENDING','occupancy_session_id':episode})
-            assert batch(edge,one,two).status_code == 200
+            if reviewed:
+                from .test_phase7_workflow import decision, enable, evidence, post
+                enable(edge)
+                one = evidence(edge)
+                post(edge, one)
+                assert decision(edge).status_code == 200
+                two = evidence(edge, 'VACANT')
+                post(edge, two)
+                assert decision(edge).status_code == 200
+            else:
+                configure(edge,'SYNTHETIC_WORKFLOW_TEST')
+                episode = uuid4()
+                one = observation(edge,1).model_copy(update={'kind':'fixture_arrive','reason':'FIXTURE',
+                    'state':'OCCUPIED','occupancy_session_id':episode})
+                two = observation(edge,2).model_copy(update={'kind':'fixture_depart','reason':'FIXTURE',
+                    'state':'RESET_PENDING','occupancy_session_id':episode})
+                assert batch(edge,one,two).status_code == 200
             docker('restart',container)
             ready()
             # Recreate API and dispose its pool, retaining the same persistent DB.
@@ -118,14 +130,24 @@ def test_postgres_restart_preserves_committed_receipts_and_unique_task(tmp_path)
             get_engine.cache_clear()
             client.close()
             edge.client = TestClient(create_app(),base_url='https://testserver')
-            assert batch(edge,one,two).status_code == 200
+            if reviewed:
+                post(edge, one)
+                post(edge, two)
+            else:
+                assert batch(edge,one,two).status_code == 200
             with engine.connect() as db:
                 assert db.scalar(text('SELECT count(*) FROM edge_receipts WHERE device_id=:id'),{'id':edge.device}) == 2
                 assert db.scalar(text('SELECT count(*) FROM staff_tasks WHERE table_id=:id'),{'id':edge.table}) == 1
                 assert db.scalar(text("SELECT current_state FROM dining_tables WHERE id=:id"),{'id':edge.table}) == 'RESET_PENDING'
+                if reviewed:
+                    assert db.scalar(text('SELECT count(*) FROM workflow_sessions WHERE table_id=:id'),{'id':edge.table}) == 1
+                    assert db.scalar(text('SELECT count(*) FROM workflow_decisions WHERE table_id=:id'),{'id':edge.table}) == 2
+                    assert db.scalar(text('SELECT count(*) FROM workflow_task_attempts WHERE location_id=:id'),{'id':edge.loc}) == 1
             report = {'container':name,'volume':volume,'actual_postgres_restart':True,'api_recreated':True,
                       'receipts':2,'reset_tasks':1,'business_database_untouched':True,'volume_retained':True}
-            (ROOT/'.secrets/phase6-implementation/database-restart.json').write_text(json.dumps(report,indent=2))
+            target = 'phase7-implementation' if reviewed else 'phase6-implementation'
+            report['reviewed_workflow_preserved'] = reviewed
+            (ROOT/'.secrets'/target/'database-restart.json').write_text(json.dumps(report,indent=2))
         finally:
             edge.client.close()
             for actor in clients.values():

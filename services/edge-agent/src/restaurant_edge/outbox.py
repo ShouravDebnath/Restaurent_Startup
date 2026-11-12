@@ -13,6 +13,7 @@ from pathlib import Path
 from uuid import uuid4
 
 from restaurant_edge.device_protocol import Observation, encode, fingerprint
+from restaurant_edge.evidence_protocol import ObservationV2
 
 
 class OutboxError(RuntimeError):
@@ -112,7 +113,8 @@ class Outbox:
                         raise OutboxError('Candidate scope differs from its immutable queue identity')
                 value = dict(candidate, device_id=self.device_id, organization_id=self.organization_id,
                              location_id=self.location_id, stream_id=self.stream_id, sequence=sequence)
-                event = Observation.model_validate(value)
+                model = ObservationV2 if type(value.get('version')) is int and value.get('version') == 2 else Observation
+                event = model.model_validate(value)
                 payload = encode(event)
                 if len(payload) > 8192:
                     raise OutboxError('Event too large')

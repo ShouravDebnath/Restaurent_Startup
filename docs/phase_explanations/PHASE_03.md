@@ -1,5 +1,9 @@
 # Phase 03: interactive restaurant dashboard with simulation
 
+> **DEMO reporting correction — 2026-11-12:** The original scenario buttons retain their existing behavior. Phase 7 reports now read their saved events/tasks for DEMO summaries, while preserving canonical AI review and original visit starts. [A02 investigation and current verification](PHASE_07.md#a02-demo-analytics-correction--2026-11-12): 210 relevant tests, eleven isolated browser groups and actual deployed A02 checks. No Phase 3 operational records were rewritten.
+
+> **Phase 7 compatibility — 2026-11-12:** Approved [Phase 7](PHASE_07.md) extends the existing dashboard and signed transport with opt-in human-reviewed workflow, compatible v2 metadata and reports. It preserves the original DEMO/v1 contracts, manual precedence, session deadlines and synthetic-only AI limitations. Phase 7 verification passes 636 tests and ten browser groups; separately approved additive `0009` and matching local services are active. Original records, credentials and calibrations are preserved, and existing locations remain OFF. Earlier phase-specific test/status statements below are historical.
+
 > **Phase 4 compatibility — 2026-11-08:** The final expanded suite passes 333 tests, retaining all 262 Phase 3 cases. The running existing floor view/SSE was checked through the browser for connection >12 seconds and offline/reconnect; original table states/records remain unchanged. Local input/calibration, grants and revision history now exist in [PHASE_04.md](PHASE_04.md), but the dashboard still uses controlled DEMO observations and never derives occupancy from footage. Earlier 10-group workflow/restart results remain their dated Phase 3 evidence, not new Phase 4 runs. Stop before Phase 5.
 
 **Date:** 2026-11-07, Asia/Dhaka.

@@ -5,8 +5,10 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { Activity, Dashboard, Me, State, Table, elapsed, labels, symbols } from "./types";
 import { EdgeHealthPanel } from "./edge-health";
+import { WorkflowReview } from "./workflow-review";
+import { fresh, WorkflowView } from "./workflow-types";
 
-type Pending = { path: string; body: object; generation: number };
+type Pending = { path: string; body: object; generation: number; method?: "POST" | "PUT" };
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -14,6 +16,7 @@ export default function DashboardPage() {
   const [orgId, setOrgId] = useState("");
   const [locationId, setLocationId] = useState("");
   const [view, setView] = useState<Dashboard | null>(null);
+  const [review,setReview] = useState<WorkflowView|null>(null);
   const [history, setHistory] = useState<Activity[]>([]);
   const [selectedId, setSelectedId] = useState("");
   const [connection, setConnection] = useState("connecting");
@@ -78,7 +81,7 @@ export default function DashboardPage() {
     let reconnectDelay = 1000;
     let newestRevision = -1;
     const active = () => current === generation.current && !controller.signal.aborted;
-    setView(null); setHistory([]); setSelectedId(""); setNotice(""); setError("");
+    setView(null); setReview(null); setHistory([]); setSelectedId(""); setNotice(""); setError("");
     setConnection("connecting"); pending.current = null; setRetry(false); lastContact.current = 0;
     working.current = false; setBusy(false);
     if (!locationId) return () => controller.abort();
@@ -87,7 +90,7 @@ export default function DashboardPage() {
     function loseAccess(message: string, signIn = false) {
       if (!active()) return;
       source?.close(); controller.abort();
-      setView(null); setHistory([]); setMe(null); csrf.current = "";
+      setView(null); setReview(null); setHistory([]); setMe(null); csrf.current = "";
       pending.current = null; setRetry(false); setConnection("expired"); setError(message);
       if (signIn) router.replace("/sign-in");
     }
@@ -104,10 +107,16 @@ export default function DashboardPage() {
       if (!response.ok || !activities.ok) throw new Error("Updates unavailable.");
       const snapshot: Dashboard = await response.json();
       const events: Activity[] = await activities.json();
+      let reviewed:WorkflowView|null=null;
+      if(["owner","org_admin","manager","staff"].includes(snapshot.role)){
+        const workflow=await fetch(prefix+"/workflow",{cache:"no-store",signal:controller.signal});
+        if(workflow.status===401){loseAccess("Your session expired. Sign in again.",true);return null;}
+        if(workflow.ok)reviewed=await workflow.json();
+      }
       if (!active()) return null;
       const revision = Number(snapshot.cursor.split(":")[1]);
       if (revision >= newestRevision) {
-        newestRevision = revision; setView(snapshot); setHistory(events);
+        newestRevision = revision; setView(snapshot); setReview(reviewed); setHistory(events);
         clockOffset.current = Date.parse(snapshot.server_time) - Date.now();
         setNow(Date.parse(snapshot.server_time));
       }
@@ -165,7 +174,7 @@ export default function DashboardPage() {
     working.current = true; setBusy(true); setError(""); setNotice(""); setRetry(false);
     try {
       const response = await fetch(request.path, {
-        method: "POST", cache: "no-store", headers: { "Content-Type": "application/json", "X-CSRF-Token": csrf.current },
+        method: request.method||"POST", cache: "no-store", headers: { "Content-Type": "application/json", "X-CSRF-Token": csrf.current },
         body: JSON.stringify(request.body), signal: AbortSignal.timeout(10000),
       });
       if (request.generation !== generation.current) return;
@@ -189,6 +198,12 @@ export default function DashboardPage() {
   function act(table: Table, action: string, demo = false) {
     if (!connected || working.current || pending.current) return;
     const task = view?.tasks.find((t) => t.table_id === table.id);
+    const context=review?.tables.find(t=>t.table_id===table.id);
+    if(action==="mark_ready"&&context?.controlled){
+      const request:Pending={path:`/api/v1/tables/${table.id}/workflow-actions`,body:{action:"ready",
+        expected_revision:table.operational_revision,request_key:crypto.randomUUID(),confirmed:true},generation:generation.current};
+      pending.current=request;void send(request);return;
+    }
     const body = demo
       ? { table_id: table.id, action, expected_revision: table.operational_revision, request_key: crypto.randomUUID() }
       : { action, expected_revision: table.operational_revision, request_key: crypto.randomUUID(),
@@ -204,8 +219,12 @@ export default function DashboardPage() {
   }
 
   const disabled = busy || !connected || retry;
+  const contextFor=(table:Table)=>review?.tables.find(t=>t.table_id===table.id);
+  const currentEvidence=(table:Table)=>{const c=contextFor(table);return !!c&&c.table_revision===table.operational_revision&&fresh(c,now);};
+  const ready=(table:Table)=>{const c=contextFor(table);return connected&&!!review&&(c?.controlled
+    ?currentEvidence(table)&&!!c.verified_ready:table.source_status==="ONLINE"&&table.observation==="VACANT");};
   const counts = (state: State) => view?.tables.filter((t) => t.current_state === state
-    && (state !== "AVAILABLE" || (connected && t.source_status === "ONLINE" && t.observation === "VACANT"))).length || 0;
+    && (state !== "AVAILABLE" || ready(t))).length || 0;
 
   if (!me) return <main className="workspace"><h1>Restaurant dashboard</h1>
     <p role="status">{error || "Opening your workspace…"}</p><Link href="/settings">Open settings</Link></main>;
@@ -213,7 +232,7 @@ export default function DashboardPage() {
   return <main className="dashboard-shell">
     <header className="dashboard-header"><div><Link className="brand" href="/">Restaurant AI Monitoring</Link>
       <h1>The dining room, at a glance.</h1></div><nav aria-label="Workspace navigation">
-        <Link href="/settings">Settings</Link><button className="secondary" onClick={() => void logout()}>Sign out</button></nav></header>
+        <Link href="/settings">Settings</Link>{manager&&<Link href={`/analytics?location=${encodeURIComponent(locationId)}`}>Analytics</Link>}<button className="secondary" onClick={() => void logout()}>Sign out</button></nav></header>
     <section className="dashboard-toolbar" aria-label="Workspace selection">
       <label>Restaurant<select value={orgId} onChange={(e) => {
         setView(null); setHistory([]); setOrgId(e.target.value);
@@ -226,8 +245,8 @@ export default function DashboardPage() {
       <span className="badge">{view?.role.replaceAll("_", " ") || "Loading"}</span>
       <button className="secondary" disabled={!view || busy} onClick={() => void refresh.current()}>Refresh</button>
     </section>
-    {view?.demo ? <p className="demo-notice"><strong>DEMO — simulated information.</strong> No CCTV or AI is connected. Scenario observations stay effective until the next explicit demo input.</p>
-      : <p className="demo-notice">Configuration workspace. No video source is connected.</p>}
+    {view?.demo ? <p className="demo-notice"><strong>DEMO — simulated information.</strong> {review?.mode==="ASSISTED_REVIEW"?"Signed synthetic evidence produces suggestions; staff must confirm each operational change.":"Scenario observations remain separate from local AI shadow estimates. No real restaurant accuracy is claimed."}</p>
+      : <p className="demo-notice">Staff decisions remain authoritative. AI evidence and camera health are shown separately.</p>}
     <div className="dashboard-connection" role="status"><strong>{connected ? "Updates connected" : connection === "connecting" ? "Connecting updates…" : "STALE — updates interrupted"}</strong>
       {view && <span>{view.location.name} · {now ? new Date(now).toLocaleTimeString([], { timeZone: view.location.time_zone }) : "—"} · {view.location.time_zone}</span>}</div>
     {!connected && view && <p className="offline-banner">Last-known information only. Current availability and actions are paused until updates reconnect.</p>}
@@ -238,6 +257,11 @@ export default function DashboardPage() {
     {view && <>
       {(view.tables_truncated || view.tasks_truncated) && <p role="alert" className="offline-banner">This overview has reached its display limit. Some tables or tasks are not shown. Ask an administrator to review the full location records.</p>}
       <EdgeHealthPanel key={locationId} locationId={locationId} cursor={view.cursor} timeZone={view.location.time_zone}/>
+      {staff&&(review?<WorkflowReview key={locationId} locationId={locationId} view={review} tables={view.tables} selected={selected}
+        manager={manager} synthetic={view.demo} disabled={disabled} now={now} timeZone={view.location.time_zone}
+        submit={(path,body,method)=>{if(disabled||working.current||pending.current)return;
+          const request={path,body,method,generation:generation.current};pending.current=request;void send(request);}}/>
+        :<p role="status" className="offline-banner">Review information is unavailable. Readiness cannot currently be verified.</p>)}
       <section className="floor-summary" aria-label="Table summary">
         <div><strong>{view.tables.length}</strong><span>Tables shown</span></div>
         {(["AVAILABLE", "OCCUPIED", "RESET_PENDING", "CLEANING", "UNKNOWN", "OUT_OF_SERVICE"] as State[]).map((state) =>
@@ -252,24 +276,25 @@ export default function DashboardPage() {
           <span className="table-name">{table.label}<span>{table.seats ? `${table.seats} seats` : "Seats not set"}</span></span>
           <span className="table-status"><span aria-hidden="true">{symbols[table.current_state]}</span> {connected ? "" : "Last known: "}{labels[table.current_state]}</span>
           <span className="table-timer" aria-live="off">{elapsed(table.state_since, now)} <small>in this state</small></span>
-          {table.source_status !== "ONLINE" && <span className="source-warning">{view.demo ? "Demo source" : "Source"}: {table.source_status === "OFFLINE" ? "offline" : "not connected"}</span>}
+          {contextFor(table)?.controlled?<span className="source-warning">{currentEvidence(table)?"Current reviewed evidence":"Evidence stale or uncertain"}{table.current_state==="AVAILABLE"&&!ready(table)?" — readiness unverified":""}</span>
+            :table.source_status !== "ONLINE" && <span className="source-warning">{view.demo ? "Demo source" : "Source"}: {table.source_status === "OFFLINE" ? "offline" : "not connected"}</span>}
           {table.state_source === "manual" && <span className="manual-label">Staff-confirmed state</span>}
         </button>)}</div>
         {!view.tables.length && <p>No tables configured. Add tables in settings.</p>}
         <div className="floor-legend" aria-label="Status legend">{(Object.keys(labels) as State[]).map((state) =>
           <span key={state}><span aria-hidden="true">{symbols[state]}</span> {labels[state]}</span>)}</div>
-        <p className="hint">Available counts require a current vacant demo observation and connected updates. A manual state is retained during source failure; its readiness is not rechecked.</p>
+        <p className="hint">Available counts require a permitted ready confirmation, current vacant evidence and connected updates. Manual decisions and their timers remain saved during source failure.</p>
       </section>
       <aside className="staff-panel" aria-label="Staff workspace">
         {selected && <section className="table-details" aria-label="Selected table">
           <h2>{selected.label}</h2><p><strong>{labels[selected.current_state]}</strong> · {elapsed(selected.state_since, now)}</p>
           {selected.current_state === "OCCUPIED" && selected.occupied_since && <p>Occupancy timer: {elapsed(selected.occupied_since, now)}</p>}
-          <p className="hint">{selected.source_status === "ONLINE" ? `Demo observation: ${selected.observation.toLowerCase()}` : "Source information is unavailable."}
+          <p className="hint">{contextFor(selected)?.controlled?(currentEvidence(selected)?`Reviewed evidence: ${contextFor(selected)?.evidence_kind?.toLowerCase()}`:"Reviewed source evidence is stale or uncertain."):selected.source_status === "ONLINE" ? `Demo observation: ${selected.observation.toLowerCase()}` : "Source information is unavailable."}
             {selected.observed_at && ` Last input ${new Date(selected.observed_at).toLocaleTimeString([], { timeZone: view.location.time_zone })}.`}</p>
           <p className="hint">Timers show recorded state duration, not order or service time. AI confidence is not measured.</p>
           {staff && <div className="staff-actions">
             {selected.current_state === "RESET_PENDING" && <button disabled={disabled} onClick={() => act(selected, "start_cleaning")}>Start cleaning</button>}
-            {["CLEANING", "UNKNOWN"].includes(selected.current_state) && <button disabled={disabled || selected.source_status !== "ONLINE" || selected.observation !== "VACANT"}
+            {["CLEANING", "UNKNOWN"].includes(selected.current_state) && <button disabled={disabled || !review || (contextFor(selected)?.controlled?!currentEvidence(selected)||!contextFor(selected)?.ready_eligible:selected.source_status !== "ONLINE" || selected.observation !== "VACANT")}
               onClick={() => act(selected, "mark_ready")}>I checked this table — mark ready</button>}
           </div>}
           {manager && (selected.current_state === "OUT_OF_SERVICE"
@@ -277,7 +302,7 @@ export default function DashboardPage() {
             : <div className="manager-actions"><label>Reason<select value={reason} onChange={(e) => setReason(e.target.value)}>
               <option value="maintenance">Maintenance</option><option value="reserved">Reserved</option><option value="safety">Safety</option><option value="other">Other operational reason</option>
             </select></label><button className="secondary" disabled={disabled} onClick={() => act(selected, "out_of_service")}>Out of service</button></div>)}
-          {view.simulation_controls && <details className="simulation-controls"><summary>DEMO scenario controls</summary>
+          {view.simulation_controls && !contextFor(selected)?.controlled && <details className="simulation-controls"><summary>DEMO scenario controls</summary>
             <p className="hint">Change synthetic observations for this table. Cleaning and manager blocks take priority.</p>
             <div>{[["arrive", "Guests arrive"], ["depart", "Guests leave"], ["vacant", "Show vacant"], ["source_offline", "Source offline"], ["source_resume", "Resume source"]].map(([action, label]) =>
               <button key={action} className="secondary" disabled={disabled} onClick={() => act(selected, action, true)}>{label}</button>)}</div>
@@ -286,10 +311,10 @@ export default function DashboardPage() {
         <section className="task-panel" aria-label="Cleaning tasks"><h2>Needs attention <span className="badge">{view.tasks.length}</span></h2>
           <p className="hint">Oldest tasks first. “May need cleaning” requires a staff check.</p>
           {!view.tasks.length && <p>No active reset tasks.</p>}
-          {view.tasks.map((task) => {
+          {[...view.tasks].sort((a,b)=>Date.parse(review?.tables.find(t=>t.table_id===a.table_id)?.pending_since||a.created_at)-Date.parse(review?.tables.find(t=>t.table_id===b.table_id)?.pending_since||b.created_at)).map((task) => {
             const table = view.tables.find((t) => t.id === task.table_id);
             return <article className="cleaning-task" key={task.id}><h3>{table?.label || "Table"} may need cleaning</h3>
-              <p>{task.status.replaceAll("_", " ")} · {elapsed(task.created_at, now)} since task creation</p>
+              <p>{task.status.replaceAll("_", " ")} · {elapsed(review?.tables.find(t=>t.table_id===task.table_id)?.pending_since||task.created_at, now)} {review?.tables.find(t=>t.table_id===task.table_id)?.pending_since?"since this reset attempt":"since task creation"}</p>
               {table && <div><button className="secondary" onClick={() => setSelectedId(table.id)}>View table</button>
                 {staff && task.status === "OPEN" && <button disabled={disabled} onClick={() => act(table, "acknowledge")}>Acknowledge</button>}
                 {staff && table.current_state === "RESET_PENDING" && <button disabled={disabled} onClick={() => act(table, "start_cleaning")}>Start cleaning</button>}</div>}

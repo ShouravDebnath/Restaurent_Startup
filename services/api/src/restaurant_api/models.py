@@ -261,6 +261,7 @@ class LocationOperations(Scoped, Base):
 class TableEvent(Identified, Scoped, Base):
     __tablename__ = "table_events"
     __table_args__ = (
+        UniqueConstraint('id', 'organization_id', 'location_id', name='event_scope'),
         ForeignKeyConstraint(
             ["table_id", "organization_id", "location_id"],
             ["dining_tables.id", "dining_tables.organization_id", "dining_tables.location_id"],
@@ -286,6 +287,7 @@ class TableEvent(Identified, Scoped, Base):
 class StaffTask(Identified, Created, Scoped, Base):
     __tablename__ = "staff_tasks"
     __table_args__ = (
+        UniqueConstraint('id', 'organization_id', 'location_id', name='task_scope'),
         ForeignKeyConstraint(
             ["table_id", "organization_id", "location_id"],
             ["dining_tables.id", "dining_tables.organization_id", "dining_tables.location_id"],

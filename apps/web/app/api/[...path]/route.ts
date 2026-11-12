@@ -13,8 +13,9 @@ async function proxy(request: NextRequest, context: Context) {
     process.env.API_INTERNAL_URL || "http://127.0.0.1:8000",
   );
   upstream.search = request.nextUrl.search;
-  const streaming = request.method === "GET" && path.length === 4
-    && path[1] === "locations" && path[3] === "stream";
+  const csvExport = request.method === "GET" && path.length === 4 && path[1] === "locations" && path[3] === "analytics.csv";
+  const streaming = csvExport || (request.method === "GET" && path.length === 4
+    && path[1] === "locations" && path[3] === "stream");
   const headers = new Headers();
   for (const name of ["accept", "content-type", "cookie", "origin", "x-csrf-token", "last-event-id"]) {
     const value = request.headers.get(name);
@@ -42,6 +43,10 @@ async function proxy(request: NextRequest, context: Context) {
       if (value) outgoing.set(name, value);
     }
     for (const cookie of result.headers.getSetCookie()) outgoing.append("set-cookie", cookie);
+    if(csvExport){
+      outgoing.set("Cache-Control","private, no-store");
+      for(const name of ["content-disposition","content-length","x-report-bytes"]){const value=result.headers.get(name);if(value)outgoing.set(name,value);}
+    }
     if (!streaming || !result.ok || !result.body) {
       request.signal.removeEventListener("abort", cancel);
       return new Response(result.body, { status: result.status, headers: outgoing });

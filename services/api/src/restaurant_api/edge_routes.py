@@ -13,6 +13,7 @@ from pydantic import Field, ValidationError, model_validator
 from sqlalchemy import select, text
 from sqlalchemy.exc import DBAPIError
 
+from restaurant_api import edge_protocol
 from restaurant_api.edge_models import (
     EdgeAssignment,
     EdgeBinding,
@@ -27,12 +28,12 @@ from restaurant_api.edge_protocol import (
     Digest,
     Health,
     Wire,
-    batch_items,
     encode,
     fingerprint,
     parse_json,
 )
 from restaurant_api.edge_signatures import verify
+from restaurant_api.evidence_protocol import compatible_batch
 from restaurant_api.routes import Auth, Write
 from restaurant_api.security import CONFIGURATORS, Db, location_access
 from restaurant_api.settings import get_settings
@@ -150,7 +151,7 @@ async def batches(request: Request, db: Db):
     body = await bounded(request)
     authenticate(request, db, body)
     try:
-        items = batch_items(body)
+        items = compatible_batch(body, edge_protocol)
     except (ValueError, TypeError):
         raise HTTPException(422, 'Device batch envelope or fields are invalid.') from None
     return query(db, 'edge_ingest', items_=encode(items).decode(), demo_=get_settings().demo_mode)
@@ -163,7 +164,9 @@ async def heartbeat(request: Request, db: Db):
     value = payload(Health, body)
     if get_settings().app_env != 'development':
         raise HTTPException(403, 'The initial processing lease is for local development only.')
-    return query(db, 'edge_heartbeat', metrics_=encode(value).decode())
+    result = query(db, 'edge_heartbeat', metrics_=encode(value).decode())
+    result['configuration'].update(query(db, 'workflow_device_config'))
+    return result
 
 
 class Manage(Wire):

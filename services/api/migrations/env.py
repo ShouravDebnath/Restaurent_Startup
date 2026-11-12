@@ -3,7 +3,10 @@ from logging.config import fileConfig
 from alembic import context
 from sqlalchemy import engine_from_config, pool
 
-from restaurant_api import edge_models  # noqa: F401 -- include Phase 6 metadata
+from restaurant_api import (
+    edge_models,  # noqa: F401 -- include Phase 6 metadata
+    workflow_models,  # noqa: F401 -- include Phase 7 metadata
+)
 from restaurant_api.models import Base
 
 config = context.config

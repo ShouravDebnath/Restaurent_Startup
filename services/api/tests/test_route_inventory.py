@@ -48,4 +48,12 @@ def test_every_resource_route_has_negative_security_coverage(suite):
         ('POST', '/v1/edge/heartbeat'),
         ('GET', '/v1/locations/{id}/devices'), ('POST', '/v1/locations/{id}/devices/commands'),
     }
+    # Both-tenant/anonymous/role negatives are exercised by Phase 7 workflow/report tests.
+    covered |= {
+        ('GET','/v1/locations/{id}/workflow'), ('GET','/v1/locations/{id}/workflow-suggestions'),
+        ('GET','/v1/locations/{id}/workflow-policy'), ('PUT','/v1/locations/{id}/workflow-policy'),
+        ('POST','/v1/locations/{id}/workflow-suggestions/{id}/decisions'),
+        ('POST','/v1/tables/{id}/workflow-actions'), ('GET','/v1/locations/{id}/analytics'),
+        ('GET','/v1/locations/{id}/analytics.csv'),
+    }
     assert actual == covered | public
